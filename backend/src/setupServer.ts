@@ -11,7 +11,6 @@ import { Server as HttpServer } from "http"
 import { Server as SocketServer } from "socket.io"
 import { createClient } from "redis"
 import { createAdapter } from "@socket.io/redis-adapter"
-import appRoutes from "./routes"
 
 import cors from "cors"
 import helmet from "helmet"
@@ -22,6 +21,11 @@ import HTTP_STATUS from "http-status-codes"
 import "express-async-errors"
 
 import { config } from "./config"
+import appRoutes from "./routes"
+import {
+  IErrorResponse,
+  CustomError,
+} from "./shared/global/helpers/errorHandler"
 
 const SERVER_PORTS = 5000
 
@@ -77,7 +81,32 @@ export class AppServer {
   }
 
   //全局错误处理
-  private globalErrorHandler(app: Application): void {}
+  private globalErrorHandler(app: Application): void {
+    //处理所有url
+    app.all("*", (req: Request, resp: Response) => {
+      resp
+        .status(HTTP_STATUS.NOT_FOUND)
+        .json({ message: `${req.originalUrl} not Found` })
+    })
+
+    app.use(
+      (
+        error: IErrorResponse,
+        req: Request,
+        resp: Response,
+        next: NextFunction
+      ) => {
+        console.log(error)
+
+        //判断是否为CustomError实例
+        if (error instanceof CustomError) {
+          return resp.status(error.statusCode).json(error.serializeErrors())
+        }
+
+        next()
+      }
+    )
+  }
 
   //启动HTTP和Socket
   private async startServer(app: Application): Promise<void> {
