@@ -11,6 +11,7 @@ import { Server as HttpServer } from "http"
 import { Server as SocketServer } from "socket.io"
 import { createClient } from "redis"
 import { createAdapter } from "@socket.io/redis-adapter"
+import Logger from "bunyan"
 
 import cors from "cors"
 import helmet from "helmet"
@@ -28,6 +29,8 @@ import {
 } from "./shared/global/helpers/errorHandler"
 
 const SERVER_PORTS = 5000
+//日志
+const log: Logger = config.createLogger("setupServer")
 
 export class AppServer {
   private app: Application
@@ -96,7 +99,7 @@ export class AppServer {
         resp: Response,
         next: NextFunction
       ) => {
-        console.log(error)
+        log.error(error)
 
         //判断是否为CustomError实例
         if (error instanceof CustomError) {
@@ -116,7 +119,7 @@ export class AppServer {
       this.startHttpServer(httpServer)
       this.socketIOConnection(socketIO)
     } catch (error) {
-      console.log(error)
+      log.error(error)
     }
   }
 
@@ -140,7 +143,7 @@ export class AppServer {
   //创建http服务
   private startHttpServer(httpServer: HttpServer): void {
     httpServer.listen(SERVER_PORTS, () => {
-      console.log("服务已成功启动")
+      log.info("服务已成功启动")
     })
   }
 
