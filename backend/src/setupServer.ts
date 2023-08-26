@@ -6,10 +6,13 @@ import {
   Request,
   NextFunction,
 } from "express"
+
 import { Server as HttpServer } from "http"
 import { Server as SocketServer } from "socket.io"
 import { createClient } from "redis"
 import { createAdapter } from "@socket.io/redis-adapter"
+import appRoutes from "./routes"
+
 import cors from "cors"
 import helmet from "helmet"
 import hpp from "hpp"
@@ -69,7 +72,9 @@ export class AppServer {
   }
 
   //路由
-  private routesMiddleware(app: Application): void {}
+  private routesMiddleware(app: Application): void {
+    appRoutes(app)
+  }
 
   //全局错误处理
   private globalErrorHandler(app: Application): void {}
