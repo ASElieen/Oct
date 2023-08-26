@@ -14,9 +14,9 @@ import cookieSession from 'cookie-session'
 import HTTP_STATUS from 'http-status-codes'
 import 'express-async-errors'
 
-import { config } from './config'
-import appRoutes from './routes'
-import { IErrorResponse, CustomError } from './shared/global/helpers/errorHandler'
+import { config } from '@/config'
+import appRoutes from '@/routes'
+import { IErrorResponse, CustomError } from '@shared/global/helpers/errorHandler'
 
 const SERVER_PORTS = 5000
 //日志
