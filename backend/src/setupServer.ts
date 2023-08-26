@@ -15,6 +15,8 @@ import cookieSession from "cookie-session"
 import HTTP_STATUS from "http-status-codes"
 import "express-async-errors"
 
+const SERVER_PORTS = 5000
+
 export class AppServer {
   private app: Application
 
@@ -62,9 +64,20 @@ export class AppServer {
 
   private globalErrorHandler(app: Application): void {}
 
-  private startServer(app: Application): void {}
+  private async startServer(app: Application): Promise<void> {
+    try {
+      const httpServer: HttpServer = new HttpServer(app)
+      this.startHttpServer(httpServer)
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   private createSocketIO(httpServer: HttpServer): void {}
 
-  private startHttpServer(httpServer: HttpServer): void {}
+  private startHttpServer(httpServer: HttpServer): void {
+    httpServer.listen(SERVER_PORTS, () => {
+      console.log("服务已成功启动")
+    })
+  }
 }
