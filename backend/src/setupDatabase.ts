@@ -1,9 +1,10 @@
 import mongoose from "mongoose"
+import { config } from "./config"
 
 export default () => {
   const connect = async () => {
     try {
-      await mongoose.connect("mongodb://0.0.0.0:27017/socialmedia")
+      await mongoose.connect(config.DATABASE_URL!)
       console.log("数据库链接成功")
     } catch (error) {
       console.log(`Error on database:${error}`)

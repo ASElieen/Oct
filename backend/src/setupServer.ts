@@ -15,6 +15,8 @@ import cookieSession from "cookie-session"
 import HTTP_STATUS from "http-status-codes"
 import "express-async-errors"
 
+import { config } from "./config"
+
 const SERVER_PORTS = 5000
 
 export class AppServer {
@@ -36,8 +38,9 @@ export class AppServer {
     app.use(
       cookieSession({
         name: "session",
-        keys: ["test1", "test2"],
+        keys: [config.SECRET_KEY_ONE!, config.SECRET_KEY_TWO!],
         maxAge: 24 * 7 * 360000,
+        secure: config.NODE_ENV !== "development",
       })
     )
 
