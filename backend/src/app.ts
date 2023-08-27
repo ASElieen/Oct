@@ -17,6 +17,7 @@ class ApplicationEntry {
   //校验ENV
   private loadConfig(): void {
     config.validateConfig()
+    config.cloudinaryConfig()
   }
 }
 
