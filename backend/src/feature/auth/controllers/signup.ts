@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb'
 import { Request, Response } from 'express'
 import { UploadApiResponse } from 'cloudinary'
+import HTTP_STATUS from 'http-status-codes'
 
 import { joiValidation } from '@/shared/global/decorators/joiValidation.decorator'
 import { signupSchema } from '../schemes/signup'
@@ -42,6 +43,8 @@ export class SignUp {
     if (!result?.public_id) {
       throw new BadRequestError('上传失败,发生未知错误，请重试')
     }
+
+    resp.status(HTTP_STATUS.CREATED).json({ message: '创建用户成功', authData })
   }
 
   private signupData(data: ISignUpData): IAuthDocument {
