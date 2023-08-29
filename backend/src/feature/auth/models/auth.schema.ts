@@ -18,7 +18,7 @@ const authSchema: Schema = new Schema(
   {
     toJSON: {
       //删掉密码 只保留剩余属性
-      transform(_doc, ret) {
+      transform(_doc: any, ret: Record<string, any>) {
         delete ret.password
         return ret
       }
