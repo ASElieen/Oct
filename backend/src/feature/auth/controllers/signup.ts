@@ -10,6 +10,11 @@ import { authService } from '@shared/services/db/auth.service'
 import { BadRequestError } from '@shared/global/helpers/errorHandler'
 import { Helpers } from '@/shared/global/helpers/helper'
 import { cloudinaryUploads } from '@/shared/global/helpers/cloudinaryUpload'
+import { IUserDocument } from '@feature/user/interfaces/user.interface'
+import { UserCache } from '@shared/services/redis/user.cache'
+import { config } from '@/config'
+
+const userCache: UserCache = new UserCache()
 
 export class SignUp {
   @joiValidation(signupSchema)
@@ -22,10 +27,11 @@ export class SignUp {
       throw new BadRequestError('该用户已经存在')
     }
 
-    //该id对应每个user
+    //该id对应每个user中的authId
     const authObjectId: ObjectId = new ObjectId()
     //用户更改头像时，objectId不变，通过该Id在cloudinary中覆盖旧头像
     const userObjectId: ObjectId = new ObjectId()
+    //存入redis使用的id
     const uId = `${Helpers.generateRandomNums(12)}`
 
     const authData: IAuthDocument = SignUp.prototype.signupData({
@@ -44,6 +50,11 @@ export class SignUp {
       throw new BadRequestError('上传失败,发生未知错误，请重试')
     }
 
+    //存入redis
+    const userDataForCache: IUserDocument = SignUp.prototype.userData(authData, userObjectId)
+    userDataForCache.profilePicture = `https://res.cloudinary.com/${config.CLOUD_NAME}/image/upload/v${result.version}/${userObjectId}`
+    await userCache.saveUserToCache(`${userObjectId}`, uId, userDataForCache)
+
     resp.status(HTTP_STATUS.CREATED).json({ message: '创建用户成功', authData })
   }
 
@@ -58,5 +69,42 @@ export class SignUp {
       avatarColor,
       createdAt: new Date()
     } as unknown as IAuthDocument
+  }
+
+  private userData(data: IAuthDocument, userObjectId: ObjectId): IUserDocument {
+    const { _id, username, email, uId, password, avatarColor } = data
+    return {
+      _id: userObjectId,
+      authId: _id,
+      uId,
+      username: Helpers.firstLetterToUppercase(username),
+      email,
+      password,
+      avatarColor,
+      profilePicture: '',
+      blocked: [],
+      blockedBy: [],
+      work: '',
+      location: '',
+      school: '',
+      quote: '',
+      bgImageId: '',
+      bgImageVersion: '',
+      followersCount: 0,
+      followingCount: 0,
+      postsCount: 0,
+      notifications: {
+        messages: true,
+        reactions: true,
+        comments: true,
+        follows: true
+      },
+      social: {
+        facebook: '',
+        instagram: '',
+        twitter: '',
+        youtube: ''
+      }
+    } as unknown as IUserDocument
   }
 }
