@@ -3,6 +3,7 @@ import { Request, Response } from 'express'
 import { UploadApiResponse } from 'cloudinary'
 import HTTP_STATUS from 'http-status-codes'
 import { omit } from 'lodash'
+import JWT from 'jsonwebtoken'
 
 import { joiValidation } from '@/shared/global/decorators/joiValidation.decorator'
 import { signupSchema } from '../schemes/signup'
@@ -63,7 +64,24 @@ export class SignUp {
     authQueue.addAuthUserJob('addAuthUserToMongoDB', { value: userDataForCache })
     userQueue.addUserJob('addUserToMongoDB', { value: userDataForCache })
 
-    resp.status(HTTP_STATUS.CREATED).json({ message: '创建用户成功', authData })
+    const userJWT: string = SignUp.prototype.signToken(authData, userObjectId)
+    //session存在服务端
+    req.session = { jwt: userJWT }
+
+    resp.status(HTTP_STATUS.CREATED).json({ message: '创建用户成功', user: userDataForCache, token: userJWT })
+  }
+
+  private signToken(data: IAuthDocument, userObjectId: ObjectId): string {
+    return JWT.sign(
+      {
+        userId: userObjectId,
+        uId: data.uId,
+        email: data.email,
+        username: data.username,
+        avatarColor: data.avatarColor
+      },
+      config.JWT_TOKEN!
+    )
   }
 
   private signupData(data: ISignUpData): IAuthDocument {
