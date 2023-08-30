@@ -16,6 +16,14 @@ class AuthService {
   public async createAuthUser(data: IAuthDocument): Promise<void> {
     await AuthModel.create(data)
   }
+
+  //---login part -----
+  public async getAuthUserByUsername(username: string): Promise<IAuthDocument> {
+    const user: IAuthDocument = (await AuthModel.findOne({
+      username: Helpers.firstLetterToUppercase(username)
+    }).exec()) as IAuthDocument
+    return user
+  }
 }
 
 export const authService: AuthService = new AuthService()

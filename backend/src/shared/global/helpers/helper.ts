@@ -3,12 +3,7 @@
 export class Helpers {
   static firstLetterToUppercase(str: string): string {
     const valueStr = str.toLowerCase()
-    return valueStr
-      .split(' ')
-      .map((value) => {
-        ;`${value.charAt(0).toUpperCase()}${value.slice(1).toLowerCase()}`
-      })
-      .join(' ')
+    return valueStr.toLowerCase().replace(/( |^)[a-z]/g, (L) => L.toUpperCase())
   }
 
   static lowerCase(str: string): string {
