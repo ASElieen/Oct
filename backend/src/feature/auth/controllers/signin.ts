@@ -7,6 +7,8 @@ import { joiValidation } from '@/shared/global/decorators/joiValidation.decorato
 import { authService } from '@/shared/services/db/auth.service'
 import { BadRequestError } from '@/shared/global/helpers/errorHandler'
 import { loginSchema } from '../schemes/signin'
+import { userService } from '../../../shared/services/db/user.service'
+import { IUserDocument } from '../../user/interfaces/user.interface'
 
 export class SignIn {
   @joiValidation(loginSchema)
@@ -20,9 +22,11 @@ export class SignIn {
     const passwordsMatch = await existUser.comparePassword(password)
     if (!passwordsMatch) throw new BadRequestError('密码错误')
 
+    const user = await userService.getUserByMongoId(`${existUser._id}`)
+
     const userJWT = JWT.sign(
       {
-        userId: existUser._id,
+        userId: user._id,
         uId: existUser.uId,
         email: existUser.email,
         username: existUser.username,
@@ -33,6 +37,17 @@ export class SignIn {
 
     req.session = { jwt: userJWT }
 
-    resp.status(HTTP_STATUS.OK).json({ message: '登录成功', user: existUser, token: userJWT })
+    const userDocument: IUserDocument = {
+      ...user,
+      //aggregate查出的字段没有authId
+      authId: existUser._id,
+      username: existUser.username,
+      email: existUser.email,
+      avatarColor: existUser.avatarColor,
+      uId: existUser.uId,
+      createdAt: existUser.createdAt
+    } as IUserDocument
+
+    resp.status(HTTP_STATUS.OK).json({ message: '登录成功', user: userDocument, token: userJWT })
   }
 }
