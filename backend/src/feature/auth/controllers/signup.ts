@@ -15,6 +15,7 @@ import { IUserDocument } from '@feature/user/interfaces/user.interface'
 import { UserCache } from '@shared/services/redis/user.cache'
 import { config } from '@/config'
 import { authQueue } from '@/shared/services/queues/auth.queue'
+import { userQueue } from '../../../shared/services/queues/user.queue'
 
 const userCache: UserCache = new UserCache()
 
@@ -60,6 +61,7 @@ export class SignUp {
     //存入mongodb
     omit(userDataForCache, ['uId', 'username', 'email', 'avatarColor', 'password'])
     authQueue.addAuthUserJob('addAuthUserToMongoDB', { value: userDataForCache })
+    userQueue.addUserJob('addUserToMongoDB', { value: userDataForCache })
 
     resp.status(HTTP_STATUS.CREATED).json({ message: '创建用户成功', authData })
   }
