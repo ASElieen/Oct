@@ -1,5 +1,6 @@
 import { Document } from 'mongoose'
 import { ObjectId } from 'mongodb'
+import { IUserDocument } from '@feature/user/interfaces/user.interface'
 
 //declare不需要引用可以直接使用
 declare global {
@@ -44,5 +45,5 @@ export interface ISignUpData {
 }
 
 export interface IAuthJob {
-  value?: string | IAuthDocument
+  value?: string | IAuthDocument | IUserDocument
 }

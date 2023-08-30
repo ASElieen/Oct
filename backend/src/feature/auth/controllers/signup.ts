@@ -2,6 +2,7 @@ import { ObjectId } from 'mongodb'
 import { Request, Response } from 'express'
 import { UploadApiResponse } from 'cloudinary'
 import HTTP_STATUS from 'http-status-codes'
+import { omit } from 'lodash'
 
 import { joiValidation } from '@/shared/global/decorators/joiValidation.decorator'
 import { signupSchema } from '../schemes/signup'
@@ -13,6 +14,7 @@ import { cloudinaryUploads } from '@/shared/global/helpers/cloudinaryUpload'
 import { IUserDocument } from '@feature/user/interfaces/user.interface'
 import { UserCache } from '@shared/services/redis/user.cache'
 import { config } from '@/config'
+import { authQueue } from '@/shared/services/queues/auth.queue'
 
 const userCache: UserCache = new UserCache()
 
@@ -54,6 +56,10 @@ export class SignUp {
     const userDataForCache: IUserDocument = SignUp.prototype.userData(authData, userObjectId)
     userDataForCache.profilePicture = `https://res.cloudinary.com/${config.CLOUD_NAME}/image/upload/v${result.version}/${userObjectId}`
     await userCache.saveUserToCache(`${userObjectId}`, uId, userDataForCache)
+
+    //存入mongodb
+    omit(userDataForCache, ['uId', 'username', 'email', 'avatarColor', 'password'])
+    authQueue.addAuthUserJob('addAuthUserToMongoDB', { value: userDataForCache })
 
     resp.status(HTTP_STATUS.CREATED).json({ message: '创建用户成功', authData })
   }
