@@ -3,6 +3,7 @@ import { IUserDocument } from '@feature/user/interfaces/user.interface'
 import Logger from 'bunyan'
 import { config } from '@/config'
 import { ServerError } from '@shared/global/helpers/errorHandler'
+import { Helpers } from '../../global/helpers/helper'
 
 const log: Logger = config.createLogger('userCache')
 
@@ -91,6 +92,25 @@ export class UserCache extends BaseCache {
     } catch (error) {
       log.error(error)
       throw new ServerError('存入redis时发生错误,清排查后重试')
+    }
+  }
+
+  public async getUserFromCache(key: string): Promise<IUserDocument | null> {
+    try {
+      if (!this.client.isOpen) await this.client.connect()
+      const resp = (await this.client.HGETALL(`users:${key}`)) as unknown as IUserDocument
+      resp.createdAt = new Date(Helpers.parseJSON(`${resp.createdAt}`)!)
+      resp.postsCount = Helpers.parseJSON(`${resp.postsCount}`)
+      resp.blocked = Helpers.parseJSON(`${resp.blocked}`)
+      resp.blockedBy = Helpers.parseJSON(`${resp.blockedBy}`)
+      resp.notifications = Helpers.parseJSON(`${resp.notifications}`)
+      resp.social = Helpers.parseJSON(`${resp.social}`)
+      resp.followersCount = Helpers.parseJSON(`${resp.followersCount}`)
+      resp.followingCount = Helpers.parseJSON(`${resp.followingCount}`)
+      return resp
+    } catch (error) {
+      log.error(error)
+      throw new ServerError('从redis取出数据时发生错误,清排查后重试')
     }
   }
 }
