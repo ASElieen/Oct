@@ -2,6 +2,7 @@ import express, { Router } from 'express'
 import { SignUp } from '../controllers/signup'
 import { SignIn } from '../controllers/signin'
 import { SignOut } from '../controllers/signout'
+import { authMiddleware } from '@/shared/global/helpers/auth.middleware'
 
 class AuthRoutes {
   private router: Router
@@ -17,7 +18,7 @@ class AuthRoutes {
   }
 
   public signoutRoute(): Router {
-    this.router.get('/signout', SignOut.prototype.update)
+    this.router.get('/signout', authMiddleware.checkAuthentication, SignOut.prototype.update)
     return this.router
   }
 }
