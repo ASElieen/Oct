@@ -14,11 +14,11 @@ interface IMailOptions {
 
 const logger: Logger = config.createLogger('mailOptions')
 
-sendGridMail.setApiKey(config.SENDGRID_API_KEY!)
+// sendGridMail.setApiKey(config.SENDGRID_API_KEY!)
 
 class MailTransport {
   public async sendEmail(receiverEmail: string, subject: string, body: string): Promise<void> {
-    if (config.NODE_ENV === 'test' || 'development') {
+    if (config.NODE_ENV === 'test' || config.NODE_ENV === 'development') {
       this.devEmailSender(receiverEmail, subject, body)
     } else {
       this.productionEmailSender(receiverEmail, subject, body)
@@ -28,18 +28,17 @@ class MailTransport {
   //dev环境
   private async devEmailSender(receiverEmail: string, subject: string, body: string): Promise<void> {
     const transporter: Mail = nodemailer.createTransport({
-      host: 'smtp.forwardemail.net',
-      port: 465,
-      secure: true,
+      host: 'smtp.ethereal.email',
+      port: 587,
       auth: {
         // TODO: replace `user` and `pass` values from <https://forwardemail.net>
-        user: config.SENDER_EMAIL,
-        pass: config.SENDER_EMAIL_PASSWORD
+        user: `${config.SENDER_EMAIL}`,
+        pass: `${config.SENDER_EMAIL_PASSWORD}`
       }
     })
 
     const mailOptions: IMailOptions = {
-      from: `${config.SENDER_EMAIL}`,
+      from: `socialmedia <${config.SENDER_EMAIL}>`,
       to: receiverEmail,
       subject,
       html: body
@@ -49,8 +48,8 @@ class MailTransport {
       await transporter.sendMail(mailOptions)
       logger.info('dev:邮件发送成功')
     } catch (error) {
-      logger.error('Error:发送邮件时出现错误')
-      throw new BadRequestError('发送邮件时出现错误')
+      logger.error(`${error}`)
+      throw new BadRequestError('dev:发送邮件时出现错误')
     }
   }
 
@@ -67,8 +66,8 @@ class MailTransport {
       await sendGridMail.send(mailOptions)
       logger.info('product:邮件发送成功')
     } catch (error) {
-      logger.error('Error:发送邮件时出现错误')
-      throw new BadRequestError('发送邮件时出现错误')
+      logger.error('Error on product:发送邮件时出现错误')
+      throw new BadRequestError('product:发送邮件时出现错误')
     }
   }
 }
