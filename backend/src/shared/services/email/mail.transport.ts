@@ -66,7 +66,7 @@ class MailTransport {
       await sendGridMail.send(mailOptions)
       logger.info('product:邮件发送成功')
     } catch (error) {
-      logger.error('Error on product:发送邮件时出现错误')
+      logger.error(`${error}`)
       throw new BadRequestError('product:发送邮件时出现错误')
     }
   }
