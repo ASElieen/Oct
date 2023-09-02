@@ -42,6 +42,16 @@ class AuthService {
       }
     )
   }
+
+  //-----------reset password----------
+  public async getAuthUserByPasswordToken(token: string): Promise<IAuthDocument> {
+    const user: IAuthDocument = (await AuthModel.findOne({
+      passwordResetToken: token,
+      //如果存储的时间依然great than现在的时间则仍然有效
+      passwordResetExpires: { $gt: Date.now() }
+    }).exec()) as IAuthDocument
+    return user
+  }
 }
 
 export const authService: AuthService = new AuthService()
