@@ -24,6 +24,24 @@ class AuthService {
     }).exec()) as IAuthDocument
     return user
   }
+
+  //-------------------forgotpassword-----
+  public async getAuthUserByEmail(email: string): Promise<IAuthDocument> {
+    const user: IAuthDocument = (await AuthModel.findOne({
+      email: Helpers.firstLetterToUppercase(email)
+    }).exec()) as IAuthDocument
+    return user
+  }
+
+  public async updatePasswordToken(id: string, token: string, tokenExpiration: number): Promise<void> {
+    await AuthModel.updateOne(
+      { _id: id },
+      {
+        passwordResetToken: token,
+        passwordResetExpires: tokenExpiration
+      }
+    )
+  }
 }
 
 export const authService: AuthService = new AuthService()
