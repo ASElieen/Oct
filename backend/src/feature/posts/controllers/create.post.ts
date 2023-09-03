@@ -6,6 +6,7 @@ import { joiValidation } from '@/shared/global/decorators/joiValidation.decorato
 import { postSchema } from '../schemes/post.scheme'
 import { IPostDocument } from '../interfaces/post.interface'
 import { PostCache } from '@/shared/services/redis/post.cache'
+import { socketIOPostObject } from '@/shared/sockets/post'
 
 const postCache = new PostCache()
 
@@ -41,6 +42,10 @@ export class CreatePost {
         wow: 0
       }
     } as IPostDocument
+
+    //emit server端和client端都能通过add post拿到createPost
+    //存入redis或者mongodb之前 用户就可以看到data了
+    socketIOPostObject.emit('add post', createPost)
 
     await postCache.savePostToCache({
       key: postObjectId,

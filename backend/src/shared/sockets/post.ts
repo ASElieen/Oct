@@ -1,6 +1,6 @@
 import { Server, Socket } from 'socket.io'
 
-let socketIOPostObject: Server
+export let socketIOPostObject: Server
 
 //不用等待存入redis或者mongodb之后才得到信息
 export class SocketIOPostHandler {
