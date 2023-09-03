@@ -1,6 +1,7 @@
 import { Application } from 'express'
 import { authRoutes } from '@feature/auth/routes/auth.routes'
 import { currentUserRoute } from '@feature/auth/routes/current.routes'
+import { postRoutes } from './feature/posts/routes/post.routes'
 
 import { authMiddleware } from './shared/global/helpers/auth.middleware'
 import { serverAdapter } from './shared/services/queues/base.queue'
@@ -12,7 +13,9 @@ export default (app: Application) => {
     app.use('/queues', serverAdapter.getRouter())
     app.use(BASE_PATH, authRoutes.routes())
     app.use(BASE_PATH, authRoutes.signoutRoute())
+
     app.use(BASE_PATH, authMiddleware.verifyUserToken, currentUserRoute.routes())
+    app.use(BASE_PATH, authMiddleware.verifyUserToken, postRoutes.routes())
   }
 
   routes()

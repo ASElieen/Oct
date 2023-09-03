@@ -5,6 +5,9 @@ import { ObjectId } from 'mongodb'
 import { joiValidation } from '@/shared/global/decorators/joiValidation.decorator'
 import { postSchema } from '../schemes/post.scheme'
 import { IPostDocument } from '../interfaces/post.interface'
+import { PostCache } from '@/shared/services/redis/post.cache'
+
+const postCache = new PostCache()
 
 export class CreatePost {
   @joiValidation(postSchema)
@@ -38,6 +41,13 @@ export class CreatePost {
         wow: 0
       }
     } as IPostDocument
+
+    await postCache.savePostToCache({
+      key: postObjectId,
+      currentUserId: `${req.currentUser!.userId}`,
+      uId: `${req.currentUser!.uId}`,
+      createdPost: createPost
+    })
 
     resp.status(HTTP_STATUS.CREATED).json({ message: '已成功创建post请求' })
   }
