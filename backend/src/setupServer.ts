@@ -17,6 +17,7 @@ import 'express-async-errors'
 import { config } from '@/config'
 import appRoutes from '@/routes'
 import { IErrorResponse, CustomError } from '@shared/global/helpers/errorHandler'
+import { SocketIOPostHandler } from './shared/sockets/post'
 
 const SERVER_PORTS = 5000
 //日志
@@ -129,5 +130,9 @@ export class AppServer {
   }
 
   //socket链接
-  private socketIOConnection(io: SocketServer): void {}
+  private socketIOConnection(io: SocketServer): void {
+    const postSocketHander: SocketIOPostHandler = new SocketIOPostHandler(io)
+
+    postSocketHander.listen()
+  }
 }
