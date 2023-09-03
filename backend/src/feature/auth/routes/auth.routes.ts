@@ -21,7 +21,7 @@ class AuthRoutes {
   }
 
   public signoutRoute(): Router {
-    this.router.get('/signout', authMiddleware.checkAuthentication, SignOut.prototype.update)
+    this.router.get('/signout', SignOut.prototype.update)
     return this.router
   }
 }
