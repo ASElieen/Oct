@@ -7,6 +7,7 @@ import { postSchema } from '../schemes/post.scheme'
 import { IPostDocument } from '../interfaces/post.interface'
 import { PostCache } from '@/shared/services/redis/post.cache'
 import { socketIOPostObject } from '@/shared/sockets/post'
+import { postQueue } from '@shared/services/queues/post.queue'
 
 const postCache = new PostCache()
 
@@ -53,6 +54,8 @@ export class CreatePost {
       uId: `${req.currentUser!.uId}`,
       createdPost: createPost
     })
+
+    postQueue.addPostJob('addPostsToDB', { key: req.currentUser!.userId, value: createPost })
 
     resp.status(HTTP_STATUS.CREATED).json({ message: '已成功创建post请求' })
   }
