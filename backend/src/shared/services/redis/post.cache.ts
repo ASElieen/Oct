@@ -106,7 +106,9 @@ export class PostCache extends BaseCache {
       }
 
       //ZRANGE从有序集合里取出key，用这个key去hash里拿表
-      const reply: string[] = await this.client.ZRANGE(key, start, end, { REV: true })
+      const reply: string[] = await this.client.ZRANGE(key, start, end)
+      reply.reverse()
+      console.log(reply)
       const multi: ReturnType<typeof this.client.multi> = this.client.multi()
       for (const value of reply) {
         multi.HGETALL(`posts:${value}`)
