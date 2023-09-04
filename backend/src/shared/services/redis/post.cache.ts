@@ -214,4 +214,26 @@ export class PostCache extends BaseCache {
       throw new ServerError('从redis中取出单个用户post次数失败,请重试')
     }
   }
+
+  public async deletePostFromCache(key: string, currentUserId: string): Promise<void> {
+    try {
+      if (!this.client.isOpen) {
+        await this.client.connect()
+      }
+      //拿到users下postsCount
+      const postsCount = await this.client.HMGET(`users:${currentUserId}`, 'postsCount')
+      const multi = this.client.multi()
+      //删掉有序集
+      multi.ZREM('post', `${key}`)
+      multi.DEL(`posts:${key}`)
+      multi.DEL(`comments:${key}`)
+      multi.DEL(`reactions:${key}`)
+      const count: number = parseInt(postsCount[0], 10) - 1
+      multi.HSET(`users:${currentUserId}`, 'postsCount', count)
+      await multi.exec()
+    } catch (error) {
+      logger.error(error)
+      throw new ServerError('删除post失败 请重试')
+    }
+  }
 }
