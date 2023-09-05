@@ -3,6 +3,7 @@ import { CreatePost } from '../controllers/create.post'
 import { GetPost } from '../controllers/get.post'
 import express, { Router } from 'express'
 import { DeletePost } from '../controllers/delete.post'
+import { UpdatePost } from '../controllers/update.post'
 
 class PostRoutes {
   private router: Router
@@ -19,6 +20,8 @@ class PostRoutes {
     this.router.post('/post/postimage', authMiddleware.checkAuthentication, CreatePost.prototype.postWithImage)
 
     this.router.delete('/post/images/:postId', authMiddleware.checkAuthentication, DeletePost.prototype.delete)
+
+    this.router.put('/post/update/:postId', authMiddleware.checkAuthentication, UpdatePost.prototype.updatePost)
     return this.router
   }
 }

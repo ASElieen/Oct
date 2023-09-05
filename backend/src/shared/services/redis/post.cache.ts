@@ -236,4 +236,45 @@ export class PostCache extends BaseCache {
       throw new ServerError('删除post失败 请重试')
     }
   }
+
+  public async updatePostInCache(key: string, updatedPost: IPostDocument): Promise<IPostDocument> {
+    const { post, bgColor, feelings, privacy, gifUrl, imgVersion, imgId, profilePicture } = updatedPost
+
+    const firstList: string[] = [
+      'post',
+      `${post}`,
+      'bgColor',
+      `${bgColor}`,
+      'feelings',
+      `${feelings}`,
+      'privacy',
+      `${privacy}`,
+      'gifUrl',
+      `${gifUrl}`
+    ]
+
+    const secondList = ['imgVersion', `${imgVersion}`, 'imgId', `${imgId}`, 'profilePicture', `${profilePicture}`]
+
+    const dataToSave = [...firstList, ...secondList]
+
+    try {
+      if (!this.client.isOpen) {
+        await this.client.connect()
+      }
+      await this.client.HSET(`posts:${key}`, dataToSave)
+
+      const multi = this.client.multi()
+      multi.HGETALL(`posts:${key}`)
+      const reply: PostCacheMultiType = await multi.exec()
+      const postReply = reply as unknown as IPostDocument[]
+      postReply[0].commentsCount = Helpers.parseJSON(`${postReply[0].commentsCount}`) as number
+      postReply[0].reactions = Helpers.parseJSON(`${postReply[0].reactions}`) as IReactions
+      postReply[0].createdAt = new Date(Helpers.parseJSON(`${postReply[0].createdAt}`)) as Date
+
+      return postReply[0]
+    } catch (error) {
+      logger.error(error)
+      throw new ServerError('更新post失败 请重试')
+    }
+  }
 }
