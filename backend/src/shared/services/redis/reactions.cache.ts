@@ -21,7 +21,7 @@ export class ReactionsCache extends BaseCache {
    * @param reaction 其他用户对该用户post点表情的数据结构
    * @param postReaction 表情数 [happy:1 ....]
    * @param type reaction type (happy,love....)
-   * @param previousReactions post中已经存在的reaction表情
+   * @param previousReactions post中已经存在的reaction type
    */
   public async savePostReactionsToCache(
     key: string,

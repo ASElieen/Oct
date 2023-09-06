@@ -6,6 +6,8 @@ import { joiValidation } from '@/shared/global/decorators/joiValidation.decorato
 import { addReactionSchema } from '../schemes/reactions.scheme'
 import { IReactionDocument } from '../interfaces/reactions.interface'
 import { ReactionsCache } from '@shared/services/redis/reactions.cache'
+import { IReactionJob } from '@feature/reactions/interfaces/reactions.interface'
+import { reactionQueue } from '@/shared/services/queues/reaction.queue'
 
 const reactionCache: ReactionsCache = new ReactionsCache()
 
@@ -23,6 +25,17 @@ export class AddReactions {
     } as IReactionDocument
 
     await reactionCache.savePostReactionsToCache(postId, reactionObject, postReactions, type, previousReaction)
+
+    const dbReactionData: IReactionJob = {
+      postId,
+      userTo,
+      userFrom: req.currentUser?.userId,
+      username: req.currentUser?.username,
+      previousReaction,
+      reactionObject
+    } as IReactionJob
+
+    reactionQueue.addReactionJob('addReactionToDB', dbReactionData)
 
     resp.status(HTTP_STATUS.OK).json({ message: '已成功添加表情' })
   }
