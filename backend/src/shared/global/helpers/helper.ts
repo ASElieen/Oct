@@ -23,7 +23,7 @@ export class Helpers {
   static parseJSON(prop: any) {
     //如果redis中不是stringnify的数据就直接return
     try {
-      JSON.parse(prop)
+      return JSON.parse(prop)
     } catch (error) {
       return prop
     }
