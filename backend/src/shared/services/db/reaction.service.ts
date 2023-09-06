@@ -8,7 +8,9 @@ const userCache: UserCache = new UserCache()
 class ReactionService {
   public async addReactionDataToDB(reaction: IReactionJob): Promise<void> {
     //userFrom =>currentUser
-    const { postId, userTo, userFrom, username, type, previousReaction, reactionObject } = reaction
+    console.log(reaction)
+    const { postId, userTo, userFrom, username, previousReaction, reactionObject } = reaction
+
     const updateReactions = await Promise.all([
       userCache.getUserFromCache(`${userTo}`),
       //upsert 找到就更新 没有就创建
@@ -17,8 +19,8 @@ class ReactionService {
         { _id: postId },
         {
           $inc: {
-            [`reactions.${previousReaction}`]: -1,
-            [`reactions.${type}`]: 1
+            [`reactions.${reactionObject?.type}`]: 1,
+            [`reactions.${previousReaction}`]: -1
           }
         },
         {
