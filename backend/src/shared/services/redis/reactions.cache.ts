@@ -62,7 +62,51 @@ export class ReactionsCache extends BaseCache {
       await this.client.HSET(`posts:${key}`, dataToSave)
     } catch (error) {
       logger.error(error)
-      throw new ServerError('从redis移除表情时发生错误,请重试')
+      throw new ServerError('从redis移除reaction时发生错误,请重试')
+    }
+  }
+
+  public async getReactionFromCache(postId: string): Promise<[IReactionDocument[], number]> {
+    try {
+      if (!this.client.isOpen) {
+        await this.client.connect()
+      }
+
+      const reactionCount = await this.client.LLEN(`reactions:${postId}`)
+      const reactionData = await this.client.LRANGE(`reactions:${postId}`, 0, -1)
+      const list: IReactionDocument[] = []
+
+      for (const item of reactionData) {
+        list.push(Helpers.parseJSON(item))
+      }
+
+      return reactionData.length ? [list, reactionCount] : [[], 0]
+    } catch (error) {
+      logger.error(error)
+      throw new ServerError('从redis取出reaction时发生错误,请重试')
+    }
+  }
+
+  public async getSingleReactionByUsernameFromCache(postId: string, username: string): Promise<[IReactionDocument, number] | []> {
+    try {
+      if (!this.client.isOpen) {
+        await this.client.connect()
+      }
+
+      const reactionData = await this.client.LRANGE(`reactions:${postId}`, 0, -1)
+      const list: IReactionDocument[] = []
+      for (const item of reactionData) {
+        list.push(Helpers.parseJSON(item))
+      }
+
+      const res: IReactionDocument = find(list, (listItem: IReactionDocument) => {
+        return listItem.postId === postId && listItem?.username === username
+      }) as IReactionDocument
+
+      return res ? [res, 1] : []
+    } catch (error) {
+      logger.error(error)
+      throw new ServerError('从redis中根据用户名取出单个reaction时发生错误,请重试')
     }
   }
 

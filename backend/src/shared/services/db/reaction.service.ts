@@ -1,7 +1,10 @@
-import { IReactionJob } from '@feature/reactions/interfaces/reactions.interface'
+import mongoose from 'mongoose'
+
+import { IReactionJob, IReactionDocument, IQueryReaction } from '@feature/reactions/interfaces/reactions.interface'
 import { UserCache } from '../redis/user.cache'
 import { ReactionModel } from '@/feature/reactions/models/reactions.model'
 import { PostModel } from '@/feature/posts/models/post.schema'
+import { Helpers } from '@/shared/global/helpers/helper'
 
 const userCache: UserCache = new UserCache()
 
@@ -46,6 +49,27 @@ class ReactionService {
         }
       )
     ])
+  }
+
+  //获取post对应的所有reaction
+  //sort createdAt排序
+  public async getPostReactions(query: IQueryReaction, sort: Record<string, 1 | -1>): Promise<[IReactionDocument[], number]> {
+    const reactions: IReactionDocument[] = await ReactionModel.aggregate([{ $match: query }, { $sort: sort }])
+    return [reactions, reactions.length]
+  }
+
+  public async getSinglePostReactionByUsername(postId: string, username: string): Promise<[IReactionDocument, number] | []> {
+    const reactions: IReactionDocument[] = await ReactionModel.aggregate([
+      { $match: { postId: new mongoose.Types.ObjectId(postId), username: Helpers.firstLetterToUppercase(username) } }
+    ])
+    return reactions.length ? [reactions[0], 1] : []
+  }
+
+  public async getReactionsByUsername(username: string): Promise<IReactionDocument[]> {
+    const reactions: IReactionDocument[] = await ReactionModel.aggregate([
+      { $match: { username: Helpers.firstLetterToUppercase(username) } }
+    ])
+    return reactions
   }
 }
 
