@@ -23,7 +23,7 @@ class ReactionRoutes {
     this.router.get(
       '/post/single/reaction/username/:postId/:username',
       authMiddleware.checkAuthentication,
-      GetReaction.prototype.getReactionsByUsername
+      GetReaction.prototype.getSingleReactionByUsername
     )
     this.router.get(
       '/post/reactions/username/:username',
