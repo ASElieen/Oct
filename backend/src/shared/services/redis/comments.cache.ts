@@ -77,7 +77,7 @@ export class CommentsCache extends BaseCache {
     }
   }
 
-  public async getSingleCommentFromCache(postId: string, commentId: string): Promise<ICommentDocument> {
+  public async getSingleCommentFromCache(postId: string, commentId: string): Promise<ICommentDocument[]> {
     try {
       if (!this.client.isOpen) {
         await this.client.connect()
@@ -92,7 +92,7 @@ export class CommentsCache extends BaseCache {
       const singleComment = find(list, (listItem: ICommentDocument) => {
         return listItem._id === commentId
       }) as ICommentDocument
-      return singleComment
+      return [singleComment]
     } catch (error) {
       logger.error(error)
       throw new ServerError('从redis中取出单个评论时失败,请重试')
