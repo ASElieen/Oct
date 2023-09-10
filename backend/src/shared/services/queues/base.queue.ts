@@ -8,8 +8,9 @@ import { IAuthJob } from '@/feature/auth/interfaces/auth.interface'
 import { IEmailJob } from '@/feature/user/interfaces/user.interface'
 import { IPostJobData } from '@feature/posts/interfaces/post.interface'
 import { IReactionJob } from '@feature/reactions/interfaces/reactions.interface'
+import { ICommentJob } from '@/feature/comments/interfaces/comments.interface'
 
-type IBaseJobData = IAuthJob | IEmailJob | IPostJobData | IReactionJob
+type IBaseJobData = IAuthJob | IEmailJob | IPostJobData | IReactionJob | ICommentJob
 
 let bullAdapters: BullAdapter[] = []
 export let serverAdapter: ExpressAdapter
