@@ -1,4 +1,5 @@
 import { Server, Socket } from 'socket.io'
+import { IReactionDocument } from '@feature/reactions/interfaces/reactions.interface'
 
 export let socketIOPostObject: Server
 
@@ -15,7 +16,13 @@ export class SocketIOPostHandler {
   public listen(): void {
     //监听connection事件
     this.io.on('connection', (socket: Socket) => {
-      console.log('Post socketio handler')
+      socket.on('reaction', (reaction: IReactionDocument) => {
+        this.io.emit('update reactions', reaction)
+      })
+
+      socket.on('comment', (reaction: IReactionDocument) => {
+        this.io.emit('update comment', reaction)
+      })
     })
   }
 }
