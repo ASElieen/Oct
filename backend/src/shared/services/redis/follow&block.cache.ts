@@ -17,6 +17,7 @@ export class FollowAndBlockCache extends BaseCache {
       if (!this.client.isOpen) {
         await this.client.connect()
       }
+      //redis中 点关注的用户放进following 被关注的放入followers
       await this.client.LPUSH(key, value)
     } catch (error) {
       logger.error(error)
