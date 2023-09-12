@@ -11,6 +11,7 @@ import { commentQueue } from '@/shared/services/queues/comment.queue'
 const commentCache: CommentsCache = new CommentsCache()
 
 export class AddComment {
+  @joiValidation(addCommentSchema)
   public async comment(req: Request, resp: Response): Promise<void> {
     const { userTo, postId, profilePicture, comment } = req.body
     const commentObjectId = new ObjectId()

@@ -3,6 +3,7 @@ import { authRoutes } from '@feature/auth/routes/auth.routes'
 import { currentUserRoute } from '@feature/auth/routes/current.routes'
 import { postRoutes } from './feature/posts/routes/post.routes'
 import { reactionRoutes } from './feature/reactions/routes/reaction.routes'
+import { commentRoute } from './feature/comments/routes/comment.routes'
 
 import { authMiddleware } from './shared/global/helpers/auth.middleware'
 import { serverAdapter } from './shared/services/queues/base.queue'
@@ -19,6 +20,8 @@ export default (app: Application) => {
     app.use(BASE_PATH, authMiddleware.verifyUserToken, postRoutes.routes())
 
     app.use(BASE_PATH, authMiddleware.verifyUserToken, reactionRoutes.routes())
+
+    app.use(BASE_PATH, authMiddleware.verifyUserToken, commentRoute.routes())
   }
 
   routes()
