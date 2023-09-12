@@ -7,6 +7,7 @@ import { FollowAndBlockCache } from '@/shared/services/redis/follow&block.cache'
 import { UserCache } from '@/shared/services/redis/user.cache'
 import { IUserDocument } from '@feature/user/interfaces/user.interface'
 import { IFollowerData } from '../interfaces/follow.block.interface'
+import { socketIOFollowerObject } from '@/shared/sockets/follower'
 
 const followAndBlockCache: FollowAndBlockCache = new FollowAndBlockCache()
 const userCache: UserCache = new UserCache()
@@ -18,7 +19,7 @@ export class AddFollower {
     const followersCount: Promise<void> = followAndBlockCache.updateFollowerCountInCache(`${followerId}`, 'followersCount', 1)
     const followingCount: Promise<void> = followAndBlockCache.updateFollowerCountInCache(
       `${req.currentUser!.userId}`,
-      '	followingCount',
+      'followingCount',
       1
     )
 
@@ -33,9 +34,7 @@ export class AddFollower {
 
     const followerObjectId = new ObjectId()
     const addFollowingData: IFollowerData = AddFollower.prototype.userData(cacheResp[0])
-
-    //send data to client with socketIO
-    //....
+    socketIOFollowerObject.emit('add follower', addFollowingData)
 
     //点击之后将其他人加入到当前用户的关注列表中
     const addFollowerToCache = followAndBlockCache.saveFollowerToCache(`following:${req.currentUser!.userId}`, `${followerId}`)
@@ -47,7 +46,7 @@ export class AddFollower {
     //queue
     //...
 
-    resp.status(HTTP_STATUS.OK).json({ message: `关注${followerId}成功` })
+    resp.status(HTTP_STATUS.OK).json({ message: `${req.currentUser!.userId}关注${followerId}成功` })
   }
 
   private userData(user: IUserDocument): IFollowerData {
