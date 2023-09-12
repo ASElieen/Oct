@@ -8,6 +8,7 @@ import { UserCache } from '@/shared/services/redis/user.cache'
 import { IUserDocument } from '@feature/user/interfaces/user.interface'
 import { IFollowerData } from '../interfaces/follow.block.interface'
 import { socketIOFollowerObject } from '@/shared/sockets/follower'
+import { followerQueue } from '@/shared/services/queues/follower.queue'
 
 const followAndBlockCache: FollowAndBlockCache = new FollowAndBlockCache()
 const userCache: UserCache = new UserCache()
@@ -43,8 +44,12 @@ export class AddFollower {
 
     await Promise.all([addFollowerToCache, addFollowingToCache])
 
-    //queue
-    //...
+    followerQueue.addFollowerJob('addFollowerToDB', {
+      keyOne: `${req.currentUser!.userId}`,
+      keyTwo: `${followerId}`,
+      username: req.currentUser!.username,
+      followerDocumentId: followerObjectId
+    })
 
     resp.status(HTTP_STATUS.OK).json({ message: `${req.currentUser!.userId}关注${followerId}成功` })
   }
