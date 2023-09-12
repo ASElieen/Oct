@@ -22,8 +22,8 @@ export interface IFollower {
 
 export interface IFollowerData {
   avatarColor: string
-  followersCount: number
-  followingCount: number
+  followersCount: number //关注该用户的用户数
+  followingCount: number //该用户关注的用户数
   profilePicture: string
   postCount: number
   username: string
