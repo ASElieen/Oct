@@ -12,11 +12,10 @@ class FollowerService {
     username: string,
     followerDocumentId: ObjectId
   ): Promise<void> {
-    //当前用户点的关注 following+1 放进follower里
-    //被关注用户follower+1 放进following里
-    //mongodb中follower代表被关注用户的follower following代表当前用户的following
-    const followingObjectId = new mongoose.Types.ObjectId(userId)
-    const followerObjectId = new mongoose.Types.ObjectId(followingId)
+    //用户A(当前用户) 作为follower following 了用户B
+    //A放入 follower  B放入 following
+    const followingObjectId = new mongoose.Types.ObjectId(followingId)
+    const followerObjectId = new mongoose.Types.ObjectId(userId)
 
     await FollowerModel.create({
       _id: followerDocumentId,
@@ -43,7 +42,7 @@ class FollowerService {
     await Promise.all([users, UserModel.findOne({ _id: followingId })])
   }
 
-  public async removeFollowerToDB(followingId: string, followerId: string): Promise<void> {
+  public async removeFollowerFromDB(followingId: string, followerId: string): Promise<void> {
     const followingObjectId = new mongoose.Types.ObjectId(followingId)
     const followerObjectId = new mongoose.Types.ObjectId(followerId)
 
@@ -71,11 +70,12 @@ class FollowerService {
     await Promise.all([unfollow, users])
   }
 
+  //拿到某一用户(A)的所有following 通过查所有followers为A的doc对应的following即可
   public async getFollowingData(userObjectId: ObjectId): Promise<IFollowerData[]> {
     const following = await FollowerModel.aggregate([
       { $match: { followerId: userObjectId } },
       //from 要去查询的表 local 根据什么字段 foreign 要去匹配什么字段 as 放入本表的字段
-      { $lookup: { from: 'User', localField: 'followingId', foreignField: '_id', as: 'FollowingUserData' } },
+      { $lookup: { from: 'User', localField: 'followerId', foreignField: '_id', as: 'FollowingUserData' } },
       //拆开数组
       { $unwind: '$FollowingUserData' },
       { $lookup: { from: 'Auth', localField: 'FollowingUserData.authId', foreignField: '_id', as: 'FollowingAuthData' } },
@@ -106,11 +106,12 @@ class FollowerService {
     return following
   }
 
+  //拿到某一用户(A)的followers 通过查所有following为A的doc，其他用户作为follower去following了A，拿所有follower
   public async getFollowerDataInDB(userObjectId: ObjectId): Promise<IFollowerData[]> {
     const follower = await FollowerModel.aggregate([
       { $match: { followingId: userObjectId } },
       //from 要去查询的表 local 根据什么字段 foreign 要去匹配什么字段 as 放入本表的字段
-      { $lookup: { from: 'User', localField: 'followerId', foreignField: '_id', as: 'FollowerUserData' } },
+      { $lookup: { from: 'User', localField: 'followingId', foreignField: '_id', as: 'FollowerUserData' } },
       //拆开数组
       { $unwind: '$FollowerUserData' },
       { $lookup: { from: 'Auth', localField: 'FollowerUserData.authId', foreignField: '_id', as: 'AuthData' } },

@@ -37,10 +37,10 @@ export class AddFollower {
     const addFollowingData: IFollowerData = AddFollower.prototype.userData(cacheResp[0])
     socketIOFollowerObject.emit('add follower', addFollowingData)
 
-    //点击之后将其他人加入到当前用户的关注列表中
-    const addFollowerToCache = followAndBlockCache.saveFollowerToCache(`following:${req.currentUser!.userId}`, `${followerId}`)
-    //在其他人的followers中添加当前用户
-    const addFollowingToCache = followAndBlockCache.saveFollowerToCache(`followers:${followerId}`, `${req.currentUser!.userId}`)
+    //当前用户作为followers去following其他用户
+    const addFollowerToCache = followAndBlockCache.saveFollowerToCache(`following:${followerId}`, `${req.currentUser!.userId}`)
+    //其他用户作为被following的对象放入following中
+    const addFollowingToCache = followAndBlockCache.saveFollowerToCache(`followers:${req.currentUser!.userId}`, `${followerId}`)
 
     await Promise.all([addFollowerToCache, addFollowingToCache])
 
