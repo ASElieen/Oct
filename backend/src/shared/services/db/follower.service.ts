@@ -12,7 +12,9 @@ class FollowerService {
     username: string,
     followerDocumentId: ObjectId
   ): Promise<void> {
-    //当前用户点的关注 放进following里
+    //当前用户点的关注 following+1 放进follower里
+    //被关注用户follower+1 放进following里
+    //mongodb中follower代表被关注用户的follower following代表当前用户的following
     const followingObjectId = new mongoose.Types.ObjectId(userId)
     const followerObjectId = new mongoose.Types.ObjectId(followingId)
 
@@ -42,8 +44,8 @@ class FollowerService {
   }
 
   public async removeFollowerToDB(followingId: string, followerId: string): Promise<void> {
-    const followingObjectId = new mongoose.Types.ObjectId(followerId)
-    const followerObjectId = new mongoose.Types.ObjectId(followingId)
+    const followingObjectId = new mongoose.Types.ObjectId(followingId)
+    const followerObjectId = new mongoose.Types.ObjectId(followerId)
 
     const unfollow = FollowerModel.deleteOne({
       followingId: followingObjectId,
@@ -108,7 +110,7 @@ class FollowerService {
     const follower = await FollowerModel.aggregate([
       { $match: { followingId: userObjectId } },
       //from 要去查询的表 local 根据什么字段 foreign 要去匹配什么字段 as 放入本表的字段
-      { $lookup: { from: 'User', localField: 'followingId', foreignField: '_id', as: 'FollowerUserData' } },
+      { $lookup: { from: 'User', localField: 'followerId', foreignField: '_id', as: 'FollowerUserData' } },
       //拆开数组
       { $unwind: '$FollowerUserData' },
       { $lookup: { from: 'Auth', localField: 'FollowerUserData.authId', foreignField: '_id', as: 'AuthData' } },
