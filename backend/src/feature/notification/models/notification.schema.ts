@@ -1,6 +1,7 @@
 import mongoose, { model, Model, Schema } from 'mongoose'
 
-import { INotificationDocument } from '../interfaces/notification.interface'
+import { INotificationDocument, INotification } from '../interfaces/notification.interface'
+import { notificationService } from '@/shared/services/db/notification.service'
 
 const notificationSchema: Schema = new Schema({
   userTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true },
@@ -18,6 +19,46 @@ const notificationSchema: Schema = new Schema({
   gifUrl: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now() }
 })
+
+notificationSchema.methods.insertNotification = async function (body: INotification) {
+  const {
+    userTo,
+    userFrom,
+    message,
+    notificationType,
+    entityId,
+    createdItemId,
+    createdAt,
+    comment,
+    reaction,
+    post,
+    imgId,
+    imgVersion,
+    gifUrl
+  } = body
+
+  await NotificationModel.create({
+    userTo,
+    userFrom,
+    message,
+    notificationType,
+    entityId,
+    createdItemId,
+    createdAt,
+    comment,
+    reaction,
+    post,
+    imgId,
+    imgVersion,
+    gifUrl
+  })
+  try {
+    const notifications: INotificationDocument[] = await notificationService.getNotification(userTo)
+    return notifications
+  } catch (error) {
+    return error
+  }
+}
 
 const NotificationModel: Model<INotificationDocument> = model<INotificationDocument>(
   'Notification',
