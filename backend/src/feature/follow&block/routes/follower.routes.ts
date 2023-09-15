@@ -3,6 +3,7 @@ import { authMiddleware } from '@/shared/global/helpers/auth.middleware'
 import { AddFollower } from '../controllers/follow.user'
 import { RemoveFollower } from '../controllers/unfollow.user'
 import { GetFollowerOrFollowing } from '../controllers/get.follow'
+import { BlockUser } from '../controllers/block.user'
 
 class FollowerRoutes {
   private router: Router
@@ -29,6 +30,9 @@ class FollowerRoutes {
       authMiddleware.checkAuthentication,
       GetFollowerOrFollowing.prototype.getUserFollowers
     )
+
+    this.router.put('/user/block/:followerId', authMiddleware.checkAuthentication, BlockUser.prototype.block)
+    this.router.put('/user/unblock/:followerId', authMiddleware.checkAuthentication, BlockUser.prototype.unblock)
 
     return this.router
   }

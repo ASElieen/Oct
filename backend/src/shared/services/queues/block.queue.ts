@@ -13,3 +13,5 @@ class BlockUserQueue extends BaseQueue {
     this.addJob(name, data)
   }
 }
+
+export const blockUserQueue: BlockUserQueue = new BlockUserQueue()
