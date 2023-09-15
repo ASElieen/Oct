@@ -19,6 +19,7 @@ import appRoutes from '@/routes'
 import { IErrorResponse, CustomError } from '@shared/global/helpers/errorHandler'
 import { SocketIOPostHandler } from './shared/sockets/post'
 import { SocketIOFollowerHandler } from './shared/sockets/follower'
+import { SocketIOUserHandler } from './shared/sockets/user'
 
 const SERVER_PORTS = 5000
 //日志
@@ -134,8 +135,10 @@ export class AppServer {
   private socketIOConnection(io: SocketServer): void {
     const postSocketHander: SocketIOPostHandler = new SocketIOPostHandler(io)
     const followerSocketHandler: SocketIOFollowerHandler = new SocketIOFollowerHandler(io)
+    const userSocketHandler: SocketIOUserHandler = new SocketIOUserHandler(io)
 
     postSocketHander.listen()
     followerSocketHandler.listen()
+    userSocketHandler.listen()
   }
 }
