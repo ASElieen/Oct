@@ -1,5 +1,6 @@
 import Logger from 'bunyan'
 import mongoose from 'mongoose'
+import { remove } from 'lodash'
 
 import { BaseCache } from './base.cache'
 import { config } from '@/config'
@@ -7,6 +8,7 @@ import { ServerError } from '@/shared/global/helpers/errorHandler'
 import { IFollowerData } from '@/feature/follow&block/interfaces/follow.block.interface'
 import { IUserDocument } from '@feature/user/interfaces/user.interface'
 import { UserCache } from './user.cache'
+import { Helpers } from '../../global/helpers/helper'
 
 const logger: Logger = config.createLogger('follow&blockCache')
 const userCache: UserCache = new UserCache()
@@ -46,7 +48,7 @@ export class FollowAndBlockCache extends BaseCache {
       if (!this.client.isOpen) {
         await this.client.connect()
       }
-      //用于为哈希表中的字段值加上火减去指定数值
+      //用于为哈希表中的字段值加上或减去指定数值
       await this.client.HINCRBY(`users:${userId}`, prop, value)
     } catch (error) {
       logger.error(error)
@@ -81,6 +83,37 @@ export class FollowAndBlockCache extends BaseCache {
     } catch (error) {
       logger.error(error)
       throw new ServerError('从redis中取出所有follower的过程中发生错误,请重试')
+    }
+  }
+
+  /**
+   *
+   * @param key hash key
+   * @param prop hash字段
+   * @param value
+   * @param type
+   */
+  public async updateBlockPropInCache(key: string, prop: string, value: string, type: 'block' | 'unblock'): Promise<void> {
+    try {
+      if (!this.client.isOpen) {
+        await this.client.connect()
+      }
+
+      const resp: string = (await this.client.HGET(`users:${key}`, prop)) as string
+      const multi = this.client.multi()
+      let blocked = Helpers.parseJSON(resp) as string[]
+      if (type === 'block') {
+        blocked = [...blocked, value]
+      } else {
+        remove(blocked, (id: string) => id === value)
+        blocked = [...blocked]
+      }
+
+      multi.HSET(`users:${key}`, `${prop}`, JSON.stringify(blocked))
+      await multi.exec()
+    } catch (error) {
+      logger.error(error)
+      throw new ServerError('在redis中更新block的过程中发生错误,请重试')
     }
   }
 }
