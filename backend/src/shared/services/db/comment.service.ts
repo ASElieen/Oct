@@ -1,9 +1,11 @@
-import { Query } from 'mongoose'
+import mongoose, { Query } from 'mongoose'
 
 import { ICommentJob, IQueryComment, ICommentDocument, ICommentNameList } from '@/feature/comments/interfaces/comments.interface'
 import { CommentsModel } from '@/feature/comments/models/comments.schema'
 import { PostModel } from '@/feature/posts/models/post.schema'
 import { UserCache } from '../redis/user.cache'
+import { NotificationModel } from '@/feature/notification/models/notification.schema'
+import { socketIOUserObject } from '@/shared/sockets/user'
 
 const userCache: UserCache = new UserCache()
 
@@ -16,6 +18,26 @@ class CommentService {
     const user = await userCache.getUserFromCache(userTo)
 
     //发送评论提醒
+    if (user?.notifications.comments && userFrom !== userTo) {
+      const notificationModel = new NotificationModel()
+      const notifications = await notificationModel.insertNotification({
+        userFrom,
+        userTo,
+        message: `${username} commented on your post.`,
+        notificationType: 'comment',
+        entityId: new mongoose.Types.ObjectId(postId),
+        createdItemId: new mongoose.Types.ObjectId(comments._id!),
+        createdAt: new Date(),
+        comment: comment.comment,
+        post: post!.post,
+        imgId: post!.imgId!,
+        imgVersion: post!.imgVersion!,
+        gifUrl: post!.gifUrl!,
+        reaction: ''
+      })
+    }
+
+    //socket io send to client
   }
 
   public async getPostComments(query: IQueryComment, sort: Record<string, 1 | -1>): Promise<ICommentDocument[]> {
