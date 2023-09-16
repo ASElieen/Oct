@@ -4,8 +4,11 @@ import Logger from 'bunyan'
 import { config } from '@/config'
 import { ServerError } from '@shared/global/helpers/errorHandler'
 import { Helpers } from '../../global/helpers/helper'
+import { ISocialLinks } from '@feature/user/interfaces/user.interface'
+import { INotificationSettings } from '@feature/user/interfaces/user.interface'
 
 const log: Logger = config.createLogger('userCache')
+type UserItem = string | ISocialLinks | INotificationSettings
 
 export class UserCache extends BaseCache {
   constructor() {
@@ -110,7 +113,21 @@ export class UserCache extends BaseCache {
       return resp
     } catch (error) {
       log.error(error)
-      throw new ServerError('从redis取出数据时发生错误,清排查后重试')
+      throw new ServerError('从redis取出数据时发生错误,请排查后重试')
+    }
+  }
+
+  public async updateSingleUserInCache(userId: string, prop: string, value: UserItem): Promise<IUserDocument | null> {
+    try {
+      if (!this.client.isOpen) {
+        await this.client.connect()
+      }
+      await this.client.HSET(`users:${userId}`, `${prop}`, JSON.stringify(value))
+      const resp: IUserDocument = (await this.getUserFromCache(userId)) as IUserDocument
+      return resp
+    } catch (error) {
+      log.error(error)
+      throw new ServerError('更新redis中的user数据时发生错误,请排查后重试')
     }
   }
 }
