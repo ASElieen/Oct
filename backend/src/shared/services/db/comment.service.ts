@@ -5,7 +5,7 @@ import { CommentsModel } from '@/feature/comments/models/comments.schema'
 import { PostModel } from '@/feature/posts/models/post.schema'
 import { UserCache } from '../redis/user.cache'
 import { NotificationModel } from '@/feature/notification/models/notification.schema'
-import { socketIOUserObject } from '@/shared/sockets/user'
+import { socketIONotificationObject } from '@/shared/sockets/notification'
 
 const userCache: UserCache = new UserCache()
 
@@ -35,9 +35,10 @@ class CommentService {
         gifUrl: post!.gifUrl!,
         reaction: ''
       })
+      //socket io send to client
+      //client端arg1 notifications arg2 userTo
+      socketIONotificationObject.emit('insert notification', notifications, { userTo })
     }
-
-    //socket io send to client
   }
 
   public async getPostComments(query: IQueryComment, sort: Record<string, 1 | -1>): Promise<ICommentDocument[]> {
