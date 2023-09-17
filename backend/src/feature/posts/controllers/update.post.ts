@@ -11,6 +11,7 @@ import { postWithImageSchema } from '../schemes/post.scheme'
 import { cloudinaryUploads } from '@/shared/global/helpers/cloudinaryUpload'
 import { BadRequestError } from '@/shared/global/helpers/errorHandler'
 import { UploadApiResponse } from 'cloudinary'
+import { imageQueue } from '@/shared/services/queues/image.queue'
 
 const postCache: PostCache = new PostCache()
 
@@ -94,6 +95,11 @@ export class UpdatePost {
     const updatedPost: IPostDocument = await postCache.updatePostInCache(postId, updatedPostData)
     socketIOPostObject.emit('update post', updatedPost, 'posts')
     postQueue.addPostJob('updatePostInDB', { key: postId, value: updatedPost })
+    imageQueue.addImageJob('addImageToDB', {
+      key: `${req.currentUser!.userId}`,
+      imageId: result.public_id,
+      imgVersion: result.version.toString()
+    })
 
     return result
   }

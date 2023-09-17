@@ -11,6 +11,7 @@ import { socketIOPostObject } from '@/shared/sockets/post'
 import { postQueue } from '@shared/services/queues/post.queue'
 import { BadRequestError } from '@/shared/global/helpers/errorHandler'
 import { cloudinaryUploads } from '@/shared/global/helpers/cloudinaryUpload'
+import { imageQueue } from '@/shared/services/queues/image.queue'
 
 const postCache = new PostCache()
 
@@ -112,7 +113,11 @@ export class CreatePost {
     })
 
     postQueue.addPostJob('addPostsToDB', { key: req.currentUser!.userId, value: createPost })
-    //TODO:图片存入mongodb
+    imageQueue.addImageJob('addImageToDB', {
+      key: `${req.currentUser!.userId}`,
+      imageId: result.public_id,
+      imgVersion: result.version.toString()
+    })
 
     resp.status(HTTP_STATUS.CREATED).json({ message: '已成功创建附带图片的post请求' })
   }
