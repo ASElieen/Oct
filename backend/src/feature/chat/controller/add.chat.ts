@@ -12,12 +12,14 @@ import { cloudinaryUploads } from '@shared/global/helpers/cloudinaryUpload'
 import { BadRequestError } from '@shared/global/helpers/errorHandler'
 import { config } from '@/config'
 import { IMessageData } from '../interfaces/chat.interface'
-import { socketIOChatObject } from '../../../shared/sockets/chat'
+import { socketIOChatObject } from '@shared/sockets/chat'
 import { IMessageNotification } from '../interfaces/chat.interface'
 import { notificationTemplate } from '@shared/services/email/templates/notifications/notification.template'
 import { mailQueue } from '@/shared/services/queues/email.queue'
+import { MessageCache } from '@/shared/services/redis/message.cache'
 
 const userCache: UserCache = new UserCache()
+const messageCache: MessageCache = new MessageCache()
 
 export class AddChat {
   @joiValidation(addChatSchema)
@@ -85,6 +87,9 @@ export class AddChat {
         messageData
       })
     }
+
+    await messageCache.addChatListToCache(`${req.currentUser!.userId}`, `${receiverId}`, `${conversationObjectId}`)
+    await messageCache.addChatListToCache(`${receiverId}`, `${req.currentUser!.userId}`, `${conversationObjectId}`)
 
     resp.status(HTTP_STATUS.OK).json({ message: '添加消息成功', conversationId: conversationObjectId })
   }
