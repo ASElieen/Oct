@@ -4,6 +4,7 @@ import { currentUserRoute } from '@feature/auth/routes/current.routes'
 import { postRoutes } from './feature/posts/routes/post.routes'
 import { reactionRoutes } from './feature/reactions/routes/reaction.routes'
 import { commentRoute } from './feature/comments/routes/comment.routes'
+import { notificationRoutes } from './feature/notification/routes/notification.routes'
 import { followerRoutes } from './feature/follow&block/routes/follower.routes'
 import { imageRoutes } from './feature/images/routes/image.routes'
 
@@ -24,6 +25,8 @@ export default (app: Application) => {
     app.use(BASE_PATH, authMiddleware.verifyUserToken, reactionRoutes.routes())
 
     app.use(BASE_PATH, authMiddleware.verifyUserToken, commentRoute.routes())
+
+    app.use(BASE_PATH, authMiddleware.verifyUserToken, notificationRoutes.routes())
 
     app.use(BASE_PATH, authMiddleware.verifyUserToken, followerRoutes.routes())
 

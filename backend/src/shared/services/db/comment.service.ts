@@ -6,6 +6,9 @@ import { PostModel } from '@/feature/posts/models/post.schema'
 import { UserCache } from '../redis/user.cache'
 import { NotificationModel } from '@/feature/notification/models/notification.schema'
 import { socketIONotificationObject } from '@/shared/sockets/notification'
+import { notificationTemplate } from '../email/templates/notifications/notification.template'
+import { INotificationTemplate } from '@feature/notification/interfaces/notification.interface'
+import { mailQueue } from '../queues/email.queue'
 
 const userCache: UserCache = new UserCache()
 
@@ -36,8 +39,17 @@ class CommentService {
         reaction: ''
       })
       //socket io send to client
-      //client端arg1 notifications arg2 userTo
+      //client端 arg1 notifications arg2 userTo
       socketIONotificationObject.emit('insert notification', notifications, { userTo })
+
+      const templateParams: INotificationTemplate = {
+        username: post?.username!,
+        message: `${username}新增了一条评论`,
+        header: `一条新评论提醒`
+      }
+
+      const template: string = notificationTemplate.notificationMessageTemplate(templateParams)
+      mailQueue.addEmailJob('commentEmail', { receiverEmail: post?.email!, template, subject: '一条新评论提醒' })
     }
   }
 
