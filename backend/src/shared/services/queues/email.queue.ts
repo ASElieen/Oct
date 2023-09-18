@@ -9,6 +9,7 @@ class MailQueue extends BaseQueue {
     this.processJob('commentEmail', 5, emailWorker.addNotificationEmail)
     this.processJob('followersEmail', 5, emailWorker.addNotificationEmail)
     this.processJob('reactionsEmail', 5, emailWorker.addNotificationEmail)
+    this.processJob('directMessageEmail', 5, emailWorker.addNotificationEmail)
   }
 
   public addEmailJob(name: string, data: IEmailJob): void {
