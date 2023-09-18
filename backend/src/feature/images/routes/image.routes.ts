@@ -3,6 +3,7 @@ import { authMiddleware } from '@/shared/global/helpers/auth.middleware'
 
 import { AddImage } from '../controllers/add.image'
 import { DeleteImage } from '../controllers/delete.image'
+import { GetImage } from '../controllers/get.image'
 
 class ImageRoutes {
   private router: Router
@@ -21,6 +22,8 @@ class ImageRoutes {
       authMiddleware.checkAuthentication,
       DeleteImage.prototype.deleteBackgroundImage
     )
+
+    this.router.get('/images/:userId', authMiddleware.checkAuthentication, GetImage.prototype.getImages)
 
     return this.router
   }
