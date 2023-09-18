@@ -1,9 +1,10 @@
 import Logger from 'bunyan'
+import { findIndex } from 'lodash'
 
 import { BaseCache } from './base.cache'
 import { config } from '@/config'
 import { ServerError } from '@/shared/global/helpers/errorHandler'
-import { findIndex } from 'lodash'
+import { IMessageData } from '@/feature/chat/interfaces/chat.interface'
 
 const logger: Logger = config.createLogger('messageCache')
 
@@ -30,6 +31,18 @@ export class MessageCache extends BaseCache {
     } catch (error) {
       logger.error(error)
       throw new ServerError('添加chatlist至redis失败,请重试')
+    }
+  }
+
+  public async addChatMessageToCache(conversationId: string, value: IMessageData): Promise<void> {
+    try {
+      if (!this.client.isOpen) {
+        await this.client.connect()
+      }
+      await this.client.RPUSH(`messages:${conversationId}`, JSON.stringify(value))
+    } catch (error) {
+      logger.error(error)
+      throw new ServerError('添加chat message至redis失败,请重试')
     }
   }
 }

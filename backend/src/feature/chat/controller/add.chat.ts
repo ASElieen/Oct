@@ -90,6 +90,7 @@ export class AddChat {
 
     await messageCache.addChatListToCache(`${req.currentUser!.userId}`, `${receiverId}`, `${conversationObjectId}`)
     await messageCache.addChatListToCache(`${receiverId}`, `${req.currentUser!.userId}`, `${conversationObjectId}`)
+    await messageCache.addChatMessageToCache(`${conversationObjectId}`, messageData)
 
     resp.status(HTTP_STATUS.OK).json({ message: '添加消息成功', conversationId: conversationObjectId })
   }
