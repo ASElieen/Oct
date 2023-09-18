@@ -9,6 +9,9 @@ import { socketIONotificationObject } from '@/shared/sockets/notification'
 import { INotificationTemplate } from '@feature/notification/interfaces/notification.interface'
 import { notificationTemplate } from '../email/templates/notifications/notification.template'
 import { mailQueue } from '../queues/email.queue'
+import { UserCache } from '../redis/user.cache'
+
+const userCache: UserCache = new UserCache()
 
 class FollowerService {
   public async addFollowerToDB(
@@ -44,7 +47,7 @@ class FollowerService {
       }
     ])
 
-    const resp = await Promise.all([users, UserModel.findOne({ _id: followingId })])
+    const resp = await Promise.all([users, userCache.getUserFromCache(followingId)])
 
     if (resp[1]?.notifications.follows && userId !== followingId) {
       const notificationModel = new NotificationModel()
