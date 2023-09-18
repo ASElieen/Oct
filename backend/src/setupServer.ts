@@ -21,6 +21,7 @@ import { SocketIOPostHandler } from './shared/sockets/post'
 import { SocketIOFollowerHandler } from './shared/sockets/follower'
 import { SocketIOUserHandler } from './shared/sockets/user'
 import { SocketIONotificationHandler } from './shared/sockets/notification'
+import { SocketIOImageHandler } from './shared/sockets/images'
 
 const SERVER_PORTS = 5000
 //日志
@@ -138,10 +139,12 @@ export class AppServer {
     const followerSocketHandler: SocketIOFollowerHandler = new SocketIOFollowerHandler(io)
     const userSocketHandler: SocketIOUserHandler = new SocketIOUserHandler(io)
     const notificationSocketHandler: SocketIONotificationHandler = new SocketIONotificationHandler()
+    const imageSocketHandler: SocketIOImageHandler = new SocketIOImageHandler()
 
     postSocketHander.listen()
     followerSocketHandler.listen()
     userSocketHandler.listen()
     notificationSocketHandler.listen(io)
+    imageSocketHandler.listen(io)
   }
 }
