@@ -3,6 +3,7 @@ import { authMiddleware } from '@/shared/global/helpers/auth.middleware'
 
 import { UpdateNotification } from '../controllers/update.noti'
 import { DeleteNotification } from '../controllers/delete.noti'
+import { GetNotification } from '../controllers/get.noti'
 
 class NotificationRoutes {
   private router: Router
@@ -17,11 +18,14 @@ class NotificationRoutes {
       authMiddleware.checkAuthentication,
       UpdateNotification.prototype.updateNotification
     )
+
     this.router.delete(
       '/notification/:notificationId',
       authMiddleware.checkAuthentication,
       DeleteNotification.prototype.deleteNotification
     )
+
+    this.router.get('/notifications', authMiddleware.checkAuthentication, GetNotification.prototype.getNotification)
 
     return this.router
   }
