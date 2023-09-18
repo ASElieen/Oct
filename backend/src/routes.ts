@@ -5,6 +5,7 @@ import { postRoutes } from './feature/posts/routes/post.routes'
 import { reactionRoutes } from './feature/reactions/routes/reaction.routes'
 import { commentRoute } from './feature/comments/routes/comment.routes'
 import { followerRoutes } from './feature/follow&block/routes/follower.routes'
+import { notificationRoutes } from './feature/notification/routes/notification.routes'
 
 import { authMiddleware } from './shared/global/helpers/auth.middleware'
 import { serverAdapter } from './shared/services/queues/base.queue'
@@ -25,6 +26,8 @@ export default (app: Application) => {
     app.use(BASE_PATH, authMiddleware.verifyUserToken, commentRoute.routes())
 
     app.use(BASE_PATH, authMiddleware.verifyUserToken, followerRoutes.routes())
+
+    app.use(BASE_PATH, authMiddleware.verifyUserToken, notificationRoutes.routes())
   }
 
   routes()
