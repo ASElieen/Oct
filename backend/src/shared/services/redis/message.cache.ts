@@ -5,7 +5,7 @@ import { BaseCache } from './base.cache'
 import { config } from '@/config'
 import { ServerError } from '@/shared/global/helpers/errorHandler'
 import { IMessageData } from '@/feature/chat/interfaces/chat.interface'
-import { IChatUsers } from '@feature/chat/interfaces/chat.interface'
+import { IChatUsers, IChatList } from '@feature/chat/interfaces/chat.interface'
 import { Helpers } from '@/shared/global/helpers/helper'
 
 const logger: Logger = config.createLogger('messageCache')
@@ -96,6 +96,28 @@ export class MessageCache extends BaseCache {
     } catch (error) {
       logger.error(error)
       throw new ServerError('从redis中移出chatuser时发生错误,请重试')
+    }
+  }
+
+  public async getUserConversationList(key: string): Promise<IMessageData[]> {
+    try {
+      if (!this.client.isOpen) {
+        await this.client.connect()
+      }
+
+      const userChatList: string[] = await this.client.LRANGE(`chatList:${key}`, 0, -1)
+
+      const conversationChatList: IMessageData[] = []
+      for (const item of userChatList) {
+        const chatItem: IChatList = Helpers.parseJSON(item) as IChatList
+        const lastMessage: string = (await this.client.LINDEX(`messages:${chatItem.conversationId}`, -1)) as string
+        conversationChatList.push(Helpers.parseJSON(lastMessage))
+      }
+
+      return conversationChatList
+    } catch (error) {
+      logger.error(error)
+      throw new ServerError('从redis中获取conversationList失败,请重试')
     }
   }
 

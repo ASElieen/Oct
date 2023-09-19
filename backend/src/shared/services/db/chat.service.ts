@@ -1,3 +1,5 @@
+import { ObjectId } from 'mongodb'
+
 import { IMessageData } from '@/feature/chat/interfaces/chat.interface'
 import { IConversationDocument } from '@feature/chat/interfaces/conversation.interface'
 import { ConversationModel } from '@/feature/chat/schema/conversation.schema'
@@ -32,6 +34,41 @@ class ChatService {
       reaction: data.reaction,
       createdAt: data.createdAt
     })
+  }
+
+  public async getUserConversationList(userId: ObjectId): Promise<IMessageData[]> {
+    const messsages: IMessageData[] = await MessageModel.aggregate([
+      { $match: { $or: [{ senderId: userId }, { receiverId: userId }] } },
+      {
+        $group: {
+          _id: '$conversationId',
+          //$$root拿到整个文档
+          result: { $last: '$$ROOT' }
+        }
+      },
+      {
+        $project: {
+          _id: '$result._id',
+          conversationId: '$result.conversationId',
+          receiverId: '$result.receiverId',
+          receiverUsername: '$result.receiverUsername',
+          receiverAvatarColor: '$result.receiverAvatarColor',
+          receiverProfilePicture: '$result.receiverProfilePicture',
+          senderUsername: '$result.senderUsername',
+          senderId: '$result.senderId',
+          senderAvatarColor: '$result.senderAvatarColor',
+          senderProfilePicture: '$result.senderProfilePicture',
+          body: '$result.body',
+          isRead: '$result.isRead',
+          gifUrl: '$result.gifUrl',
+          selectedImage: '$result.selectedImage',
+          reaction: '$result.reaction',
+          createdAt: '$result.createdAt'
+        }
+      },
+      { $sort: { createdAt: 1 } }
+    ])
+    return messsages
   }
 }
 
