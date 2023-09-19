@@ -95,6 +95,18 @@ export class AddChat {
     resp.status(HTTP_STATUS.OK).json({ message: '添加消息成功', conversationId: conversationObjectId })
   }
 
+  public async addChatUsers(req: Request, resp: Response): Promise<void> {
+    const chatUsers = await messageCache.addChatUserToCache(req.body)
+    socketIOChatObject.emit('add chat users', chatUsers)
+    resp.status(HTTP_STATUS.OK).json({ message: '添加chat user成功' })
+  }
+
+  public async removeChatUsers(req: Request, res: Response): Promise<void> {
+    const chatUsers = await messageCache.removeChatUsersFromCache(req.body)
+    socketIOChatObject.emit('add chat users', chatUsers)
+    res.status(HTTP_STATUS.OK).json({ message: '成功移除chat user' })
+  }
+
   private emitSocketIOEvent(data: IMessageData): void {
     socketIOChatObject.emit('message received', data)
     socketIOChatObject.emit('chat list', data)
