@@ -15,6 +15,7 @@ class ChatRoutes {
     this.router.post('/chat/message/remove_chat_users', authMiddleware.checkAuthentication, AddChat.prototype.removeChatUsers)
 
     this.router.get('/chat/message/conversation_list', authMiddleware.checkAuthentication, GetChat.prototype.conversationList)
+    this.router.get('/chat/message/user/:receiverId', authMiddleware.checkAuthentication, GetChat.prototype.messages)
 
     return this.router
   }

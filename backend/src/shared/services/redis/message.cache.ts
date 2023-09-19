@@ -1,5 +1,5 @@
 import Logger from 'bunyan'
-import { findIndex } from 'lodash'
+import { findIndex, find } from 'lodash'
 
 import { BaseCache } from './base.cache'
 import { config } from '@/config'
@@ -118,6 +118,32 @@ export class MessageCache extends BaseCache {
     } catch (error) {
       logger.error(error)
       throw new ServerError('从redis中获取conversationList失败,请重试')
+    }
+  }
+
+  public async getChatMessageFromCache(senderId: string, receiverId: string): Promise<IMessageData[]> {
+    try {
+      if (!this.client.isOpen) {
+        await this.client.connect()
+      }
+      const userChatList: string[] = await this.client.LRANGE(`chatList:${senderId}`, 0, -1)
+      const receiver: string = find(userChatList, (listItem: string) => listItem.includes(receiverId)) as string
+      const parsedReceiver: IChatList = Helpers.parseJSON(receiver) as IChatList
+
+      if (parsedReceiver) {
+        const userMessages: string[] = await this.client.LRANGE(`messages:${parsedReceiver.conversationId}`, 0, -1)
+        const chatMessages: IMessageData[] = []
+        for (const item of userMessages) {
+          const chatItem = Helpers.parseJSON(item) as IMessageData
+          chatMessages.push(chatItem)
+        }
+        return chatMessages
+      } else {
+        return []
+      }
+    } catch (error) {
+      logger.error(error)
+      throw new ServerError('从redis中获取ChatMessage失败,请重试')
     }
   }
 

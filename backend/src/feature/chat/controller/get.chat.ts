@@ -20,4 +20,25 @@ export class GetChat {
 
     resp.status(HTTP_STATUS.OK).json({ message: '获取用户conversation list成功', list })
   }
+
+  public async messages(req: Request, resp: Response): Promise<void> {
+    const { receiverId } = req.params
+
+    let messages: IMessageData[] = []
+    const cachedMessages: IMessageData[] = await messageCache.getChatMessageFromCache(
+      `${req.currentUser!.userId}`,
+      `${receiverId}`
+    )
+    if (cachedMessages.length) {
+      messages = cachedMessages
+    } else {
+      messages = await chatService.getMessages(
+        new mongoose.Types.ObjectId(req.currentUser!.userId),
+        new mongoose.Types.ObjectId(receiverId),
+        { createdAt: 1 }
+      )
+    }
+
+    resp.status(HTTP_STATUS.OK).json({ message: '获取用户messages成功', messages })
+  }
 }
