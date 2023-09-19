@@ -10,8 +10,17 @@ import { IPostJobData } from '@feature/posts/interfaces/post.interface'
 import { IReactionJob } from '@feature/reactions/interfaces/reactions.interface'
 import { ICommentJob } from '@/feature/comments/interfaces/comments.interface'
 import { IFollowerJobData } from '@feature/follow&block/interfaces/follow.block.interface'
+import { IChatJobData, IMessageData } from '@feature/chat/interfaces/chat.interface'
 
-type IBaseJobData = IAuthJob | IEmailJob | IPostJobData | IReactionJob | ICommentJob | IFollowerJobData
+type IBaseJobData =
+  | IAuthJob
+  | IEmailJob
+  | IPostJobData
+  | IReactionJob
+  | ICommentJob
+  | IFollowerJobData
+  | IChatJobData
+  | IMessageData
 
 let bullAdapters: BullAdapter[] = []
 export let serverAdapter: ExpressAdapter

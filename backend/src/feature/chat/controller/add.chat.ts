@@ -17,6 +17,7 @@ import { IMessageNotification } from '../interfaces/chat.interface'
 import { notificationTemplate } from '@shared/services/email/templates/notifications/notification.template'
 import { mailQueue } from '@/shared/services/queues/email.queue'
 import { MessageCache } from '@/shared/services/redis/message.cache'
+import { chatQueue } from '@/shared/services/queues/chat.queue'
 
 const userCache: UserCache = new UserCache()
 const messageCache: MessageCache = new MessageCache()
@@ -91,6 +92,7 @@ export class AddChat {
     await messageCache.addChatListToCache(`${req.currentUser!.userId}`, `${receiverId}`, `${conversationObjectId}`)
     await messageCache.addChatListToCache(`${receiverId}`, `${req.currentUser!.userId}`, `${conversationObjectId}`)
     await messageCache.addChatMessageToCache(`${conversationObjectId}`, messageData)
+    chatQueue.addChatJob('addChatMessageToDB', messageData)
 
     resp.status(HTTP_STATUS.OK).json({ message: '添加消息成功', conversationId: conversationObjectId })
   }
