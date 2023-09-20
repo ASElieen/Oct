@@ -5,6 +5,7 @@ import { AddChat } from '../controller/add.chat'
 import { GetChat } from '../controller/get.chat'
 import { DeleteChat } from '../controller/delete.chat'
 import { UpdateMessage } from '../controller/update.chat'
+import { MsgReaction } from '../controller/add.message.reaction'
 
 class ChatRoutes {
   private router: Router
@@ -26,6 +27,7 @@ class ChatRoutes {
     )
 
     this.router.put('/chat/message/mark_as_read', authMiddleware.checkAuthentication, UpdateMessage.prototype.updateMessage)
+    this.router.put('/chat/message/reaction', authMiddleware.checkAuthentication, MsgReaction.prototype.updateReactions)
 
     return this.router
   }
