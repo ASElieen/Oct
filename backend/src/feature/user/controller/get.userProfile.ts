@@ -62,6 +62,19 @@ export class GetUsers {
     return { users, totalUsers }
   }
 
+  public async currentUserProfile(req: Request, resp: Response): Promise<void> {
+    const cachedUser: IUserDocument = (await userCache.getUserFromCache(`${req.currentUser!.userId}`)) as IUserDocument
+    const existingUser: IUserDocument = cachedUser ? cachedUser : await userService.getUserByMongoId(`${req.currentUser!.userId}`)
+    resp.status(HTTP_STATUS.OK).json({ message: '获取当前用户信息成功', user: existingUser })
+  }
+
+  public async profileByUserId(req: Request, res: Response): Promise<void> {
+    const { userId } = req.params
+    const cachedUser: IUserDocument = (await userCache.getUserFromCache(userId)) as IUserDocument
+    const existingUser: IUserDocument = cachedUser ? cachedUser : await userService.getUserByMongoId(userId)
+    res.status(HTTP_STATUS.OK).json({ message: '通过id获取其他用户信息成功', user: existingUser })
+  }
+
   private async usersCount(type: string): Promise<number> {
     const totalUsers: number = type === 'redis' ? await userCache.getTotalUsersInCache() : await userService.getTotalUsersInDB()
     return totalUsers
