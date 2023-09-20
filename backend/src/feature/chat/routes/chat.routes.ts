@@ -4,6 +4,7 @@ import { authMiddleware } from '@/shared/global/helpers/auth.middleware'
 import { AddChat } from '../controller/add.chat'
 import { GetChat } from '../controller/get.chat'
 import { DeleteChat } from '../controller/delete.chat'
+import { UpdateMessage } from '../controller/update.chat'
 
 class ChatRoutes {
   private router: Router
@@ -23,6 +24,8 @@ class ChatRoutes {
       authMiddleware.checkAuthentication,
       DeleteChat.prototype.markMessageAsDeleted
     )
+
+    this.router.put('/chat/message/mark_as_read', authMiddleware.checkAuthentication, UpdateMessage.prototype.updateMessage)
 
     return this.router
   }

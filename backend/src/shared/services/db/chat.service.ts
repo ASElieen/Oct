@@ -89,6 +89,16 @@ class ChatService {
       await MessageModel.updateOne({ _id: messageId }, { $set: { deleteForMe: true, deleteForEveryone: true } }).exec()
     }
   }
+
+  public async markMessagesAsRead(senderId: ObjectId, receiverId: ObjectId): Promise<void> {
+    const query = {
+      $or: [
+        { senderId, receiverId, isRead: false },
+        { senderId: receiverId, receiverId: senderId, isRead: false }
+      ]
+    }
+    await MessageModel.updateMany(query, { $set: { isRead: true } }).exec()
+  }
 }
 
 export const chatService: ChatService = new ChatService()
