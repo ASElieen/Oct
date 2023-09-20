@@ -8,6 +8,7 @@ import { followerRoutes } from './feature/follow&block/routes/follower.routes'
 import { notificationRoutes } from './feature/notification/routes/notification.routes'
 import { imageRoutes } from './feature/images/routes/image.routes'
 import { chatRoutes } from './feature/chat/routes/chat.routes'
+import { userRoutes } from './feature/user/routes/user.routes'
 
 import { authMiddleware } from './shared/global/helpers/auth.middleware'
 import { serverAdapter } from './shared/services/queues/base.queue'
@@ -34,6 +35,8 @@ export default (app: Application) => {
     app.use(BASE_PATH, authMiddleware.verifyUserToken, imageRoutes.routes())
 
     app.use(BASE_PATH, authMiddleware.verifyUserToken, chatRoutes.routes())
+
+    app.use(BASE_PATH, authMiddleware.verifyUserToken, userRoutes.routes())
   }
 
   routes()

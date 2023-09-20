@@ -128,7 +128,8 @@ export class UserCache extends BaseCache {
         await this.client.connect()
       }
 
-      const response: string[] = await this.client.ZRANGE('user', start, end, { REV: true })
+      const response: string[] = await this.client.ZRANGE('user', start, end)
+      response.reverse()
       const multi: ReturnType<typeof this.client.multi> = this.client.multi()
       for (const key of response) {
         //跳过自己
@@ -177,6 +178,19 @@ export class UserCache extends BaseCache {
     } catch (error) {
       log.error(error)
       throw new ServerError('更新redis中的user数据时发生错误,请排查后重试')
+    }
+  }
+
+  public async getTotalUsersInCache(): Promise<number> {
+    try {
+      if (!this.client.isOpen) {
+        await this.client.connect()
+      }
+      const count: number = await this.client.ZCARD('user')
+      return count
+    } catch (error) {
+      log.error(error)
+      throw new ServerError('获取users总数时出现错误,请重试')
     }
   }
 }

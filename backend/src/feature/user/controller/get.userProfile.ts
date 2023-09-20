@@ -63,7 +63,8 @@ export class GetUsers {
   }
 
   private async usersCount(type: string): Promise<number> {
-    return 0
+    const totalUsers: number = type === 'redis' ? await userCache.getTotalUsersInCache() : await userService.getTotalUsersInDB()
+    return totalUsers
   }
 
   private async followers(userId: string): Promise<IFollowerData[]> {
