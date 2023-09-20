@@ -10,6 +10,9 @@ import { userService } from '@/shared/services/db/user.service'
 import { followerService } from '@/shared/services/db/follower.service'
 import { IFollowerData } from '../../follow&block/interfaces/follow.block.interface'
 import { IAllUsers } from '../interfaces/user.interface'
+import { PostCache } from '@shared/services/redis/post.cache'
+import { postService } from '@shared/services/db/post.service'
+import { IPostDocument } from '../../posts/interfaces/post.interface'
 
 interface IUserAll {
   newSkip: number
@@ -21,6 +24,7 @@ interface IUserAll {
 const PAGE_SIZE = 12
 const userCache: UserCache = new UserCache()
 const followAndBlockCache: FollowAndBlockCache = new FollowAndBlockCache()
+const postCache: PostCache = new PostCache()
 
 export class GetUsers {
   public async all(req: Request, res: Response): Promise<void> {
@@ -73,6 +77,20 @@ export class GetUsers {
     const cachedUser: IUserDocument = (await userCache.getUserFromCache(userId)) as IUserDocument
     const existingUser: IUserDocument = cachedUser ? cachedUser : await userService.getUserByMongoId(userId)
     res.status(HTTP_STATUS.OK).json({ message: '通过id获取其他用户信息成功', user: existingUser })
+  }
+
+  public async profileAndPosts(req: Request, resp: Response): Promise<void> {
+    const { userId, username, uId } = req.params
+    const userName: string = Helpers.firstLetterToUppercase(username)
+    const cachedUser = await userCache.getUserFromCache(userId)
+    const cachedUserPosts = await postCache.getUserPostFromCache('post', parseInt(uId, 10))
+
+    const existingUser: IUserDocument = cachedUser ? cachedUser : await userService.getUserByMongoId(userId)
+    const userPosts: IPostDocument[] = cachedUserPosts.length
+      ? cachedUserPosts
+      : await postService.getPosts({ username: userName }, 0, 100, { createdAt: -1 })
+
+    resp.status(HTTP_STATUS.OK).json({ message: '成功获取到用户信息及其发布内容', user: existingUser, posts: userPosts })
   }
 
   private async usersCount(type: string): Promise<number> {
