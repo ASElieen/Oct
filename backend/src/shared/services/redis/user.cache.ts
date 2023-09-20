@@ -6,9 +6,11 @@ import { ServerError } from '@shared/global/helpers/errorHandler'
 import { Helpers } from '../../global/helpers/helper'
 import { ISocialLinks } from '@feature/user/interfaces/user.interface'
 import { INotificationSettings } from '@feature/user/interfaces/user.interface'
+import { RedisCommandRawReply } from '@redis/client/dist/lib/commands'
 
 const log: Logger = config.createLogger('userCache')
 type UserItem = string | ISocialLinks | INotificationSettings
+type UserCacheMultiType = string | number | Buffer | RedisCommandRawReply[] | IUserDocument | IUserDocument[]
 
 export class UserCache extends BaseCache {
   constructor() {
@@ -116,7 +118,51 @@ export class UserCache extends BaseCache {
       return resp
     } catch (error) {
       log.error(error)
-      throw new ServerError('从redis取出数据时发生错误,请排查后重试')
+      throw new ServerError('从redis取出user时发生错误,请排查后重试')
+    }
+  }
+
+  public async getUsersFromCacheWithPagnation(start: number, end: number, excludedUserKey: string): Promise<IUserDocument[]> {
+    try {
+      if (!this.client.isOpen) {
+        await this.client.connect()
+      }
+
+      const response: string[] = await this.client.ZRANGE('user', start, end, { REV: true })
+      const multi: ReturnType<typeof this.client.multi> = this.client.multi()
+      for (const key of response) {
+        //跳过自己
+        if (key !== excludedUserKey) {
+          multi.HGETALL(`users:${key}`)
+        }
+      }
+
+      const replies: UserCacheMultiType = (await multi.exec()) as UserCacheMultiType
+      const userReplies: IUserDocument[] = []
+
+      for (const reply of replies as IUserDocument[]) {
+        reply.createdAt = new Date(Helpers.parseJSON(`${reply.createdAt}`))
+        reply.postsCount = Helpers.parseJSON(`${reply.postsCount}`)
+        reply.blocked = Helpers.parseJSON(`${reply.blocked}`)
+        reply.blockedBy = Helpers.parseJSON(`${reply.blockedBy}`)
+        reply.notifications = Helpers.parseJSON(`${reply.notifications}`)
+        reply.social = Helpers.parseJSON(`${reply.social}`)
+        reply.followersCount = Helpers.parseJSON(`${reply.followersCount}`)
+        reply.followingCount = Helpers.parseJSON(`${reply.followingCount}`)
+        reply.bgImageId = Helpers.parseJSON(`${reply.bgImageId}`)
+        reply.bgImageVersion = Helpers.parseJSON(`${reply.bgImageVersion}`)
+        reply.profilePicture = Helpers.parseJSON(`${reply.profilePicture}`)
+        reply.work = Helpers.parseJSON(`${reply.work}`)
+        reply.school = Helpers.parseJSON(`${reply.school}`)
+        reply.location = Helpers.parseJSON(`${reply.location}`)
+        reply.quote = Helpers.parseJSON(`${reply.quote}`)
+
+        userReplies.push(reply)
+      }
+      return userReplies
+    } catch (error) {
+      log.error(error)
+      throw new ServerError('从redis取出users时发生错误,请排查后重试')
     }
   }
 
