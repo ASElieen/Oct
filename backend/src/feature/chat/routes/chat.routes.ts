@@ -3,6 +3,7 @@ import { authMiddleware } from '@/shared/global/helpers/auth.middleware'
 
 import { AddChat } from '../controller/add.chat'
 import { GetChat } from '../controller/get.chat'
+import { DeleteChat } from '../controller/delete.chat'
 
 class ChatRoutes {
   private router: Router
@@ -16,6 +17,12 @@ class ChatRoutes {
 
     this.router.get('/chat/message/conversation_list', authMiddleware.checkAuthentication, GetChat.prototype.conversationList)
     this.router.get('/chat/message/user/:receiverId', authMiddleware.checkAuthentication, GetChat.prototype.messages)
+
+    this.router.delete(
+      '/chat/message/mark_as_deleted/:messageId/:senderId/:receiverId/:type',
+      authMiddleware.checkAuthentication,
+      DeleteChat.prototype.markMessageAsDeleted
+    )
 
     return this.router
   }

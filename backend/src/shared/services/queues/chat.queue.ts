@@ -6,6 +6,7 @@ class ChatQueue extends BaseQueue {
   constructor() {
     super('chats')
     this.processJob('addChatMessageToDB', 5, chatWorker.addChatMessageToDB)
+    this.processJob('markMessageAsDeleted', 5, chatWorker.markMessageAsDeleted)
   }
 
   public addChatJob(name: string, data: IChatJobData | IMessageData): void {
