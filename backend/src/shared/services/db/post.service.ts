@@ -18,7 +18,7 @@ class PostService {
     if (query.imgId && query?.gifUrl) {
       postQuery = { $or: [{ imgId: { $ne: '' } }, { gifUrl: { $ne: '' } }] }
     } else if (query.videoId) {
-      postQuery = { $or: [{ videoId: { $ne: '' } }] }
+      postQuery = { $and: [{ videoId: { $ne: '' } }, { videoId: { $exists: true } }] }
     } else {
       postQuery = query
     }
