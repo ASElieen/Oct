@@ -7,8 +7,8 @@ import { socketIOPostObject } from '@/shared/sockets/post'
 import { joiValidation } from '@/shared/global/decorators/joiValidation.decorator'
 import { postSchema } from '../schemes/post.scheme'
 import { IPostDocument } from '../interfaces/post.interface'
-import { postWithImageSchema } from '../schemes/post.scheme'
-import { cloudinaryUploads } from '@/shared/global/helpers/cloudinaryUpload'
+import { postWithImageSchema, postWithVideoSchema } from '../schemes/post.scheme'
+import { cloudinaryUploads, videoUpload } from '@/shared/global/helpers/cloudinaryUpload'
 import { BadRequestError } from '@/shared/global/helpers/errorHandler'
 import { UploadApiResponse } from 'cloudinary'
 import { imageQueue } from '@/shared/services/queues/image.queue'
@@ -18,7 +18,18 @@ const postCache: PostCache = new PostCache()
 export class UpdatePost {
   @joiValidation(postSchema)
   public async updatePost(req: Request, resp: Response): Promise<void> {
-    const { post, bgColor, feelings, privacy, gifUrl, imgVersion, imgId, profilePicture } = req.body
+    const {
+      post,
+      bgColor,
+      feelings,
+      privacy,
+      gifUrl,
+      imgVersion,
+      imgId,
+      profilePicture,
+      videoId = '',
+      videoVesion = ''
+    } = req.body
     const { postId } = req.params
 
     const updatedPostData: IPostDocument = {
@@ -29,8 +40,10 @@ export class UpdatePost {
       gifUrl,
       profilePicture,
       imgId,
-      imgVersion
-    } as IPostDocument
+      imgVersion,
+      videoId,
+      videoVesion
+    } as unknown as IPostDocument
 
     const updatedPost: IPostDocument = await postCache.updatePostInCache(postId, updatedPostData)
     socketIOPostObject.emit('update post', updatedPost, 'posts')
@@ -52,8 +65,33 @@ export class UpdatePost {
     resp.status(HTTP_STATUS.OK).json({ message: 'post with image更新成功' })
   }
 
+  @joiValidation(postWithVideoSchema)
+  public async postWithVideo(req: Request, res: Response): Promise<void> {
+    const { videoId, videoVersion } = req.body
+    if (videoId && videoVersion) {
+      UpdatePost.prototype.updateImagePost(req)
+    } else {
+      const result: UploadApiResponse = await UpdatePost.prototype.updateImageToExistingPost(req)
+      if (!result.public_id) {
+        throw new BadRequestError(result.message)
+      }
+    }
+    res.status(HTTP_STATUS.OK).json({ message: 'Post with video updated successfully' })
+  }
+
   private async updateImagePost(req: Request): Promise<void> {
-    const { post, bgColor, feelings, privacy, gifUrl, imgVersion, imgId, profilePicture } = req.body
+    const {
+      post,
+      bgColor,
+      feelings,
+      privacy,
+      gifUrl,
+      imgVersion,
+      imgId,
+      profilePicture,
+      videoId = '',
+      videoVersion = ''
+    } = req.body
     const { postId } = req.params
 
     const updatedPostData: IPostDocument = {
@@ -64,7 +102,9 @@ export class UpdatePost {
       gifUrl,
       profilePicture,
       imgId,
-      imgVersion
+      imgVersion,
+      videoId,
+      videoVersion
     } as IPostDocument
 
     const updatedPost: IPostDocument = await postCache.updatePostInCache(postId, updatedPostData)
@@ -73,10 +113,12 @@ export class UpdatePost {
   }
 
   private async updateImageToExistingPost(req: Request): Promise<UploadApiResponse> {
-    const { post, bgColor, feelings, privacy, gifUrl, image, profilePicture } = req.body
+    const { post, bgColor, feelings, privacy, gifUrl, image, profilePicture, video } = req.body
     const { postId } = req.params
 
-    const result: UploadApiResponse = (await cloudinaryUploads(image)) as UploadApiResponse
+    const result: UploadApiResponse = image
+      ? ((await cloudinaryUploads(image)) as UploadApiResponse)
+      : ((await videoUpload(video)) as UploadApiResponse)
     if (!result?.public_id) {
       return result
     }
@@ -88,8 +130,10 @@ export class UpdatePost {
       feelings,
       gifUrl,
       profilePicture,
-      imgId: result.public_id,
-      imgVersion: result.version.toString()
+      imgId: image ? result.public_id : '',
+      imgVersion: image ? result.version.toString() : '',
+      videoId: video ? result.public_id : '',
+      videoVersion: video ? result.version.toString() : ''
     } as IPostDocument
 
     const updatedPost: IPostDocument = await postCache.updatePostInCache(postId, updatedPostData)

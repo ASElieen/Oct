@@ -18,11 +18,13 @@ class PostRoutes {
 
     this.router.post('/post', authMiddleware.checkAuthentication, CreatePost.prototype.post)
     this.router.post('/post/postimage', authMiddleware.checkAuthentication, CreatePost.prototype.postWithImage)
+    this.router.post('/post/postvideo', authMiddleware.checkAuthentication, CreatePost.prototype.postWithVideo)
 
     this.router.delete('/post/images/:postId', authMiddleware.checkAuthentication, DeletePost.prototype.delete)
 
     this.router.put('/post/update/:postId', authMiddleware.checkAuthentication, UpdatePost.prototype.updatePost)
     this.router.put('/post/update/image/:postId', authMiddleware.checkAuthentication, UpdatePost.prototype.postWithImage)
+    this.router.put('/post/update/video/:postId', authMiddleware.checkAuthentication, UpdatePost.prototype.postWithVideo)
     return this.router
   }
 }
