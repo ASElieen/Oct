@@ -5,6 +5,7 @@ import { GetUsers } from '../controller/get.userProfile'
 import { SearchUser } from '../controller/search.user'
 import { Update } from '../controller/change.password'
 import { EditUser } from '../controller/update.basicInfo'
+import { UpdateSettings } from '../controller/update.notiSettings'
 
 class UserRoutes {
   private router: Router
@@ -32,6 +33,7 @@ class UserRoutes {
     this.router.put('/user/profile/change_password', authMiddleware.checkAuthentication, Update.prototype.changePassword)
     this.router.put('/user/profile/basic_info', authMiddleware.checkAuthentication, EditUser.prototype.updateInfo)
     this.router.put('/user/profile/social_links', authMiddleware.checkAuthentication, EditUser.prototype.updateSocialLink)
+    this.router.put('/user/profile/settings', authMiddleware.checkAuthentication, UpdateSettings.prototype.notification)
 
     return this.router
   }

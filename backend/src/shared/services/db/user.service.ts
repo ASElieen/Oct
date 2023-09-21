@@ -3,7 +3,7 @@ import { UserModel } from '@/feature/user/models/user.schemal'
 import mongoose from 'mongoose'
 import { indexOf } from 'lodash'
 import { followerService } from './follower.service'
-import { ISearchUser, IBasicInfo, ISocialLinks } from '@/feature/user/interfaces/user.interface'
+import { ISearchUser, IBasicInfo, ISocialLinks, INotificationSettings } from '@/feature/user/interfaces/user.interface'
 import { AuthModel } from '@/feature/auth/models/auth.schema'
 
 class UserService {
@@ -119,6 +119,10 @@ class UserService {
         $set: { social: links }
       }
     ).exec()
+  }
+
+  public async updateNotificationSettings(userId: string, settings: INotificationSettings): Promise<void> {
+    await UserModel.updateOne({ _id: userId }, { $set: { notifications: settings } }).exec()
   }
 
   private aggregateProject() {

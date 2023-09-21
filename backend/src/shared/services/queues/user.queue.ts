@@ -8,6 +8,7 @@ class UserQueue extends BaseQueue {
     this.processJob('addUserToMongoDB', 5, userWorker.addUserToDB)
     this.processJob('updateUserInfo', 5, userWorker.updateUserInfo)
     this.processJob('updateSocialLinks', 5, userWorker.updateSocialLinks)
+    this.processJob('updateNotificationSettings', 5, userWorker.updateNotificationSettings)
   }
 
   //在signup中把job添加到队列
