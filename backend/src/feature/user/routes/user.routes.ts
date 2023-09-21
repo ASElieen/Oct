@@ -19,6 +19,11 @@ class UserRoutes {
       authMiddleware.checkAuthentication,
       GetUsers.prototype.profileAndPosts
     )
+    this.router.get(
+      '/user/profile/strangers/suggestions',
+      authMiddleware.checkAuthentication,
+      GetUsers.prototype.randomUserSuggestions
+    )
 
     return this.router
   }

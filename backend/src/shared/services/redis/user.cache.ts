@@ -217,6 +217,7 @@ export class UserCache extends BaseCache {
         }
       }
 
+      //去掉自己
       const excludedUsernameIndex = findIndex(replies, ['username', excludedUsername])
       replies.splice(excludedUsernameIndex, 1)
 

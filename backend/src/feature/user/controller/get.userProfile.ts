@@ -93,6 +93,23 @@ export class GetUsers {
     resp.status(HTTP_STATUS.OK).json({ message: '成功获取到用户信息及其发布内容', user: existingUser, posts: userPosts })
   }
 
+  public async randomUserSuggestions(req: Request, resp: Response): Promise<void> {
+    let randomUsers: IUserDocument[] = []
+    const cachedUsers: IUserDocument[] = await userCache.getRandomUserFromCache(
+      `${req.currentUser!.userId}`,
+      req.currentUser!.username
+    )
+
+    if (cachedUsers.length) {
+      randomUsers = [...cachedUsers]
+    } else {
+      const users: IUserDocument[] = await userService.getRandomUsers(req.currentUser!.userId)
+      randomUsers = [...users]
+    }
+
+    resp.status(HTTP_STATUS.OK).json({ message: '获取陌生用户推荐数据成功', users: randomUsers })
+  }
+
   private async usersCount(type: string): Promise<number> {
     const totalUsers: number = type === 'redis' ? await userCache.getTotalUsersInCache() : await userService.getTotalUsersInDB()
     return totalUsers

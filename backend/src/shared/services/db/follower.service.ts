@@ -194,7 +194,8 @@ class FollowerService {
         }
       }
     ])
-    return map(following, (result) => result.followeeId.toString())
+    const followingIdData = map(following, (result) => result.followingId.toString())
+    return followingIdData
   }
 }
 
