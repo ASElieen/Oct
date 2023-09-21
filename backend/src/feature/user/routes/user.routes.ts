@@ -3,6 +3,7 @@ import express, { Router } from 'express'
 import { authMiddleware } from '@/shared/global/helpers/auth.middleware'
 import { GetUsers } from '../controller/get.userProfile'
 import { SearchUser } from '../controller/search.user'
+import { Update } from '../controller/change.password'
 
 class UserRoutes {
   private router: Router
@@ -26,6 +27,8 @@ class UserRoutes {
       GetUsers.prototype.randomUserSuggestions
     )
     this.router.get('/user/profile/search/:query', authMiddleware.checkAuthentication, SearchUser.prototype.search)
+
+    this.router.put('/user/profile/change_password', authMiddleware.checkAuthentication, Update.prototype.changePassword)
 
     return this.router
   }

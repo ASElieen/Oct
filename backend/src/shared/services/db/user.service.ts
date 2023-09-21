@@ -94,6 +94,10 @@ class UserService {
     return users
   }
 
+  public async updatePassword(username: string, hashedPassword: string): Promise<void> {
+    await AuthModel.updateOne({ username }, { $set: { password: hashedPassword } }).exec()
+  }
+
   private aggregateProject() {
     return {
       _id: 1,
