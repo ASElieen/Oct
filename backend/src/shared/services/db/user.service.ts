@@ -3,6 +3,8 @@ import { UserModel } from '@/feature/user/models/user.schemal'
 import mongoose from 'mongoose'
 import { indexOf } from 'lodash'
 import { followerService } from './follower.service'
+import { ISearchUser } from '@/feature/user/interfaces/user.interface'
+import { AuthModel } from '@/feature/auth/models/auth.schema'
 
 class UserService {
   public async addUserData(data: IUserDocument): Promise<void> {
@@ -72,6 +74,24 @@ class UserService {
       }
     }
     return randomUsers
+  }
+
+  public async searchUsers(regex: RegExp): Promise<ISearchUser[]> {
+    const users = await AuthModel.aggregate([
+      { $match: { username: regex } },
+      { $lookup: { from: 'User', localField: '_id', foreignField: '_id', as: 'user' } },
+      { $unwind: '$user' },
+      {
+        $project: {
+          _id: '$user._id',
+          username: 1,
+          email: 1,
+          avatarColor: 1,
+          profilePicture: 1
+        }
+      }
+    ])
+    return users
   }
 
   private aggregateProject() {

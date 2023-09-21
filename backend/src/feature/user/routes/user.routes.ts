@@ -2,6 +2,7 @@ import express, { Router } from 'express'
 
 import { authMiddleware } from '@/shared/global/helpers/auth.middleware'
 import { GetUsers } from '../controller/get.userProfile'
+import { SearchUser } from '../controller/search.user'
 
 class UserRoutes {
   private router: Router
@@ -24,6 +25,7 @@ class UserRoutes {
       authMiddleware.checkAuthentication,
       GetUsers.prototype.randomUserSuggestions
     )
+    this.router.get('/user/profile/search/:query', authMiddleware.checkAuthentication, SearchUser.prototype.search)
 
     return this.router
   }
