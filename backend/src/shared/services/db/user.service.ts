@@ -3,7 +3,7 @@ import { UserModel } from '@/feature/user/models/user.schemal'
 import mongoose from 'mongoose'
 import { indexOf } from 'lodash'
 import { followerService } from './follower.service'
-import { ISearchUser } from '@/feature/user/interfaces/user.interface'
+import { ISearchUser, IBasicInfo, ISocialLinks } from '@/feature/user/interfaces/user.interface'
 import { AuthModel } from '@/feature/auth/models/auth.schema'
 
 class UserService {
@@ -96,6 +96,29 @@ class UserService {
 
   public async updatePassword(username: string, hashedPassword: string): Promise<void> {
     await AuthModel.updateOne({ username }, { $set: { password: hashedPassword } }).exec()
+  }
+
+  public async updateUserInfo(userId: string, info: IBasicInfo): Promise<void> {
+    await UserModel.updateOne(
+      { _id: userId },
+      {
+        $set: {
+          work: info['work'],
+          school: info['school'],
+          quote: info['quote'],
+          location: info['location']
+        }
+      }
+    ).exec()
+  }
+
+  public async updateSocialLinks(userId: string, links: ISocialLinks): Promise<void> {
+    await UserModel.updateOne(
+      { _id: userId },
+      {
+        $set: { social: links }
+      }
+    ).exec()
   }
 
   private aggregateProject() {

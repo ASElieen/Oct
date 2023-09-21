@@ -4,6 +4,7 @@ import { authMiddleware } from '@/shared/global/helpers/auth.middleware'
 import { GetUsers } from '../controller/get.userProfile'
 import { SearchUser } from '../controller/search.user'
 import { Update } from '../controller/change.password'
+import { EditUser } from '../controller/update.basicInfo'
 
 class UserRoutes {
   private router: Router
@@ -29,6 +30,8 @@ class UserRoutes {
     this.router.get('/user/profile/search/:query', authMiddleware.checkAuthentication, SearchUser.prototype.search)
 
     this.router.put('/user/profile/change_password', authMiddleware.checkAuthentication, Update.prototype.changePassword)
+    this.router.put('/user/profile/basic_info', authMiddleware.checkAuthentication, EditUser.prototype.updateInfo)
+    this.router.put('/user/profile/social_links', authMiddleware.checkAuthentication, EditUser.prototype.updateSocialLink)
 
     return this.router
   }
