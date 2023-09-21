@@ -1,6 +1,8 @@
 import { IUserDocument } from '@/feature/user/interfaces/user.interface'
 import { UserModel } from '@/feature/user/models/user.schemal'
 import mongoose from 'mongoose'
+import { indexOf } from 'lodash'
+import { followerService } from './follower.service'
 
 class UserService {
   public async addUserData(data: IUserDocument): Promise<void> {
@@ -37,6 +39,39 @@ class UserService {
   public async getTotalUsersInDB(): Promise<number> {
     const totalCount: number = await UserModel.find({}).countDocuments()
     return totalCount
+  }
+
+  public async getRandomUsers(userId: string): Promise<IUserDocument[]> {
+    const randomUsers: IUserDocument[] = []
+    const users: IUserDocument[] = await UserModel.aggregate([
+      { $match: { _id: { $ne: new mongoose.Types.ObjectId(userId) } } },
+      { $lookup: { from: 'Auth', localField: '_id', foreignField: '_id', as: 'authId' } },
+      { $unwind: '$authId' },
+      { $sample: { size: 10 } },
+      {
+        $addFields: {
+          username: '$authId.username',
+          email: '$authId.email',
+          avatarColor: '$authId.avatarColor',
+          uId: '$authId.uId',
+          createdAt: '$authId.createdAt'
+        }
+      },
+      {
+        $project: {
+          authId: 0,
+          __v: 0
+        }
+      }
+    ])
+    const followers: string[] = await followerService.getFollowingIDs(`${userId}`)
+    for (const user of users) {
+      const followerIndex = indexOf(followers, user._id.toString())
+      if (followerIndex < 0) {
+        randomUsers.push(user)
+      }
+    }
+    return randomUsers
   }
 
   private aggregateProject() {

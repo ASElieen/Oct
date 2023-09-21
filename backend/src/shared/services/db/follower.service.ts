@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb'
 import mongoose from 'mongoose'
+import { map } from 'lodash'
 
 import { FollowerModel } from '@/feature/follow&block/models/follower.schema'
 import { UserModel } from '@/feature/user/models/user.schemal'
@@ -181,6 +182,19 @@ class FollowerService {
       }
     ])
     return follower
+  }
+
+  public async getFollowingIDs(userId: string): Promise<string[]> {
+    const following = await FollowerModel.aggregate([
+      { $match: { followerId: new mongoose.Types.ObjectId(userId) } },
+      {
+        $project: {
+          followingId: 1,
+          _id: 0
+        }
+      }
+    ])
+    return map(following, (result) => result.followeeId.toString())
   }
 }
 
